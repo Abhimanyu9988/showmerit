@@ -1,0 +1,14 @@
+name: live-check
+on:
+  workflow_dispatch:
+  schedule: [{ cron: "41 */6 * * *" }]
+permissions: { contents: read, pages: write }
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: python tools/live_check.py
+        env: { GITHUB_TOKEN: "${{ github.token }}" }
