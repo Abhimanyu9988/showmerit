@@ -1,4 +1,5 @@
 """Fail the build if a page has a broken internal link, a missing share image, or counts that don't reconcile."""
+import json
 import pathlib
 import re
 import struct
@@ -29,6 +30,8 @@ for page in pages:
             problems.append(f"{name}: broken link {url}")
     for url in re.findall(r'abhimanyu9988\.github\.io/[^"\s<)]*', text):
         problems.append(f"{name}: old site link {url}")
+    for block in re.findall(r'<script type="application/ld\+json">(.*?)</script>', text, re.S):
+        json.loads(block)
     image = re.search(r'og:image" content="https://showmerit\.com([^"]+)"', text)
     if image:
         file = SITE / image.group(1).lstrip("/")
@@ -36,6 +39,13 @@ for page in pages:
             problems.append(f"{name}: no share image {image.group(1)}")
         elif struct.unpack(">II", file.read_bytes()[16:24]) != (1200, 630):
             problems.append(f"{name}: share image isn't 1200x630")
+
+for name in ("llms.txt", "feed.xml", "sitemap.xml"):
+    if not (SITE / name).is_file():
+        problems.append(f"missing {name}")
+for page in (SITE / "abhimanyu/articles").glob("*/index.html"):
+    if not (page.parent / "article.md").is_file():
+        problems.append(f"{page.parent.name}: no article.md")
 
 profile = SITE / "abhimanyu/index.html"
 if profile.is_file():

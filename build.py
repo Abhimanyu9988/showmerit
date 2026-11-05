@@ -123,15 +123,20 @@ def load_goals(profile, badges):
     return sorted(shown, key=lambda g: g["done"] / g["total"], reverse=True), [g for g in goals if g["earned"]]
 
 
-def page(title, description, path, content, image="/share.png", kind="website"):
+def page(title, description, path, content, image="/share.png", kind="website", schema=None):
     canonical = SITE + path
+    data = ""
+    if schema:
+        text = json.dumps(schema, ensure_ascii=False).replace("<", "\\u003c")
+        data = f'<script type="application/ld+json">{text}</script>\n'
     return f"""<!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>{e(title)}</title>
 <meta name="description" content="{e(description)}">
 <link rel="canonical" href="{canonical}">
-<meta property="og:type" content="{kind}"><meta property="og:site_name" content="ShowMerit">
+<link rel="alternate" type="application/rss+xml" title="ShowMerit articles" href="/feed.xml">
+{data}<meta property="og:type" content="{kind}"><meta property="og:site_name" content="ShowMerit">
 <meta property="og:title" content="{e(title)}"><meta property="og:description" content="{e(description)}">
 <meta property="og:url" content="{canonical}"><meta property="og:image" content="{SITE}{image}">
 <meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
@@ -256,6 +261,28 @@ def facts(rows, articles, badges):
     return '<dl class="facts">' + "".join(f"<div><dt>{k}</dt><dd>{v}</dd></div>" for v, k in items) + "</dl>"
 
 
+def person(profile):
+    return {"@context": "https://schema.org", "@type": "Person", "name": profile["name"], "description": profile["lede"],
+            "url": f"{SITE}/{profile['slug']}/", "sameAs": [link["url"] for link in profile["links"]]}
+
+
+def llms(profile, articles):
+    lines = ["# ShowMerit", "", "> Professional profiles where every claim links to its proof.", "",
+             f"## {profile['name']}", "", profile["lede"], "", f"- [Profile]({SITE}/{profile['slug']}/)", "", "## Articles", ""]
+    lines += [f"- [{a['title']}]({SITE}{a['url']}article.md): {a['description']}" for a in articles]
+    return "\n".join(lines) + "\n"
+
+
+def feed(profile, articles):
+    items = "".join(
+        f"<item><title>{e(a['title'])}</title><link>{SITE}{a['url']}</link><guid>{SITE}{a['url']}</guid>"
+        f"<pubDate>{datetime.date.fromisoformat(a['date']).strftime('%a, %d %b %Y')} 12:00:00 GMT</pubDate>"
+        f"<description>{e(a['description'])}</description></item>" for a in articles)
+    return ('<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"><channel><title>ShowMerit articles</title>'
+            f"<link>{SITE}/{profile['slug']}/articles/</link><description>Articles by {e(profile['name'])}</description>"
+            f"{items}</channel></rss>\n")
+
+
 def home(profile, rows, articles):
     picks = [r for r in rows if r["kind"] == "owner"][:2]
     picks += [r for r in rows if r["kind"] == "std"][:1] + [r for r in rows if r["kind"] == "fix"][:1]
@@ -313,7 +340,7 @@ def profile_page(profile, rows, articles, today, badges, goals, earned):
 <ul class="ledger">{''.join(article_row(a) for a in articles)}</ul></section>
 </main>"""
     return page(f"{profile['name']} on ShowMerit", profile["lede"], f"/{profile['slug']}/", content,
-                image=f"/{profile['slug']}/share.png", kind="profile")
+                image=f"/{profile['slug']}/share.png", kind="profile", schema=person(profile))
 
 
 def articles_page(profile, articles):
@@ -339,7 +366,11 @@ def article_page(profile, article, others):
 <article class="prose wrap">{article['body']}</article>
 <section class="next wrap"><h2>Read next</h2><ul class="ledger">{article_row(others[0])}</ul>
 <p class="more">{e(profile['lede'])} <a href="/{profile['slug']}/">See the proof</a></p></section></main>"""
-    return page(article["title"], article["description"], article["url"], content, image=article["share"], kind="article")
+    schema = {"@context": "https://schema.org", "@type": "TechArticle", "headline": article["title"],
+              "description": article["description"], "datePublished": article["date"], "image": SITE + article["share"],
+              "url": SITE + article["url"], "mainEntityOfPage": SITE + article["url"], "author": person(profile),
+              "keywords": ", ".join(article.get("tags", []))}
+    return page(article["title"], article["description"], article["url"], content, image=article["share"], kind="article", schema=schema)
 
 
 def write(path, text):
@@ -377,11 +408,17 @@ def main():
     write(f"/{slug}/articles/", articles_page(profile, articles))
     for i, article in enumerate(articles):
         write(article["url"], article_page(profile, article, articles[(i + 1) % len(articles):] + articles))
+        source = frontmatter.load(ROOT / "content" / slug / "articles" / f"{article['slug']}.md")
+        write(article["url"] + "article.md", f"# {article['title']}\n\n{article['description']}\n\nBy {profile['name']}. "
+              f"Published {article['date']}. Page: {SITE}{article['url']}\n\n{source.content}")
     write("/404.html", page("Page not found", "This page isn't on ShowMerit.", "/404.html",
                             '<main><section class="person wrap"><h1>Not here</h1><p>This page isn\'t on ShowMerit. '
                             f'<a href="/{slug}/">See a real profile</a>.</p></section></main>'))
-    urls = ["/", f"/{slug}/", f"/{slug}/articles/"] + [a["url"] for a in articles]
-    sitemap = "".join(f"<url><loc>{SITE}{u}</loc></url>" for u in urls)
+    write("/llms.txt", llms(profile, articles))
+    write("/feed.xml", feed(profile, articles))
+    urls = [("/", today.isoformat()), (f"/{slug}/", today.isoformat()), (f"/{slug}/articles/", articles[0]["date"])]
+    urls += [(a["url"], a["date"]) for a in articles]
+    sitemap = "".join(f"<url><loc>{SITE}{u}</loc><lastmod>{d}</lastmod></url>" for u, d in urls)
     write("/sitemap.xml", f'<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{sitemap}</urlset>\n')
     write("/robots.txt", f"User-agent: *\nAllow: /\nSitemap: {SITE}/sitemap.xml\n")
     if PREVIEW:
