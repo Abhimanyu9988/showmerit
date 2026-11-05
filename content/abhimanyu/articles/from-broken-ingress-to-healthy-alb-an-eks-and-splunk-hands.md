@@ -10,8 +10,8 @@ tags:
 - eks
 - kubernetes
 - splunk
-lab_url: https://github.com/Abhimanyu9988/Abhimanyu9988.github.io/tree/main/labs/from-broken-ingress-to-healthy-alb-an-eks-and-splunk-hands
-evidence_url: https://github.com/Abhimanyu9988/Abhimanyu9988.github.io/tree/main/labs/from-broken-ingress-to-healthy-alb-an-eks-and-splunk-hands/evidence
+lab_url: https://github.com/Abhimanyu9988/showmerit/tree/main/labs/from-broken-ingress-to-healthy-alb-an-eks-and-splunk-hands
+evidence_url: https://github.com/Abhimanyu9988/showmerit/tree/main/labs/from-broken-ingress-to-healthy-alb-an-eks-and-splunk-hands/evidence
 region: eu-central-1
 ---
 
@@ -83,8 +83,8 @@ You need Terraform, aws CLI v2, kubectl, helm 3.16 or newer, jq, and curl, plus 
 This keeps Terraform, Kubernetes labels, and Splunk queries on the same lab name.
 
 ```bash
-git clone https://github.com/Abhimanyu9988/Abhimanyu9988.github.io.git
-cd Abhimanyu9988.github.io/labs/from-broken-ingress-to-healthy-alb-an-eks-and-splunk-hands
+git clone https://github.com/Abhimanyu9988/showmerit.git
+cd showmerit/labs/from-broken-ingress-to-healthy-alb-an-eks-and-splunk-hands
 
 export AWS_REGION=eu-central-1
 export LAB_NAME=alb-ingress-lab
@@ -204,15 +204,15 @@ My cleanup script finished after 37 seconds, and Terraform destroyed 23 resource
 
 Everything above runs from these files. Open any of them to copy it, or clone the repo as shown:
 
-- [`README.md`](https://github.com/Abhimanyu9988/Abhimanyu9988.github.io/blob/main/labs/from-broken-ingress-to-healthy-alb-an-eks-and-splunk-hands/README.md)
-- [`cleanup.sh`](https://github.com/Abhimanyu9988/Abhimanyu9988.github.io/blob/main/labs/from-broken-ingress-to-healthy-alb-an-eks-and-splunk-hands/cleanup.sh)
-- [`fix.sh`](https://github.com/Abhimanyu9988/Abhimanyu9988.github.io/blob/main/labs/from-broken-ingress-to-healthy-alb-an-eks-and-splunk-hands/fix.sh)
-- [`k8s/app.yaml`](https://github.com/Abhimanyu9988/Abhimanyu9988.github.io/blob/main/labs/from-broken-ingress-to-healthy-alb-an-eks-and-splunk-hands/k8s/app.yaml)
-- [`k8s/ingress.yaml`](https://github.com/Abhimanyu9988/Abhimanyu9988.github.io/blob/main/labs/from-broken-ingress-to-healthy-alb-an-eks-and-splunk-hands/k8s/ingress.yaml)
-- [`main.tf`](https://github.com/Abhimanyu9988/Abhimanyu9988.github.io/blob/main/labs/from-broken-ingress-to-healthy-alb-an-eks-and-splunk-hands/main.tf)
-- [`providers.tf`](https://github.com/Abhimanyu9988/Abhimanyu9988.github.io/blob/main/labs/from-broken-ingress-to-healthy-alb-an-eks-and-splunk-hands/providers.tf)
-- [`reproduce.sh`](https://github.com/Abhimanyu9988/Abhimanyu9988.github.io/blob/main/labs/from-broken-ingress-to-healthy-alb-an-eks-and-splunk-hands/reproduce.sh)
-- [`evidence/`](https://github.com/Abhimanyu9988/Abhimanyu9988.github.io/tree/main/labs/from-broken-ingress-to-healthy-alb-an-eks-and-splunk-hands/evidence): the raw output of my run
+- [`README.md`](https://github.com/Abhimanyu9988/showmerit/blob/main/labs/from-broken-ingress-to-healthy-alb-an-eks-and-splunk-hands/README.md)
+- [`cleanup.sh`](https://github.com/Abhimanyu9988/showmerit/blob/main/labs/from-broken-ingress-to-healthy-alb-an-eks-and-splunk-hands/cleanup.sh)
+- [`fix.sh`](https://github.com/Abhimanyu9988/showmerit/blob/main/labs/from-broken-ingress-to-healthy-alb-an-eks-and-splunk-hands/fix.sh)
+- [`k8s/app.yaml`](https://github.com/Abhimanyu9988/showmerit/blob/main/labs/from-broken-ingress-to-healthy-alb-an-eks-and-splunk-hands/k8s/app.yaml)
+- [`k8s/ingress.yaml`](https://github.com/Abhimanyu9988/showmerit/blob/main/labs/from-broken-ingress-to-healthy-alb-an-eks-and-splunk-hands/k8s/ingress.yaml)
+- [`main.tf`](https://github.com/Abhimanyu9988/showmerit/blob/main/labs/from-broken-ingress-to-healthy-alb-an-eks-and-splunk-hands/main.tf)
+- [`providers.tf`](https://github.com/Abhimanyu9988/showmerit/blob/main/labs/from-broken-ingress-to-healthy-alb-an-eks-and-splunk-hands/providers.tf)
+- [`reproduce.sh`](https://github.com/Abhimanyu9988/showmerit/blob/main/labs/from-broken-ingress-to-healthy-alb-an-eks-and-splunk-hands/reproduce.sh)
+- [`evidence/`](https://github.com/Abhimanyu9988/showmerit/tree/main/labs/from-broken-ingress-to-healthy-alb-an-eks-and-splunk-hands/evidence): the raw output of my run
 
 ## Sources
 
@@ -223,4 +223,4 @@ Everything above runs from these files. Open any of them to copy it, or clone th
 Disclosure: I work at Splunk, part of Cisco. This is my personal writing; the post isn't sponsored or reviewed by my employer.
 
 ---
-_I built this in a disposable AWS lab. The [lab code and raw output](https://github.com/Abhimanyu9988/Abhimanyu9988.github.io/tree/main/labs/from-broken-ingress-to-healthy-alb-an-eks-and-splunk-hands) are public. Drafted with AI assistance and reviewed by me._
+_I built this in a disposable AWS lab. The [lab code and raw output](https://github.com/Abhimanyu9988/showmerit/tree/main/labs/from-broken-ingress-to-healthy-alb-an-eks-and-splunk-hands) are public. Drafted with AI assistance and reviewed by me._

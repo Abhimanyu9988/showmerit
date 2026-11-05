@@ -81,7 +81,7 @@ def load_articles(profile):
     for path in (ROOT / "content" / profile["slug"] / "articles").glob("*.md"):
         post = frontmatter.load(path)
         words = len(post.content.split())
-        body = markdown.markdown(loosen_lists(post.content), extensions=["fenced_code", "tables", "sane_lists"])
+        body = markdown.markdown(loosen_lists(post.content), extensions=["fenced_code", "tables", "sane_lists", "toc"])
         body = body.replace("<table>", '<div class="tablewrap"><table>').replace("</table>", "</table></div>")
         articles.append({**post.metadata, "slug": path.stem, "body": body, "minutes": max(1, round(words / 220)),
                          "date": str(post["date"]),
@@ -350,6 +350,26 @@ def articles_page(profile, articles):
                 f"/{profile['slug']}/articles/", content, image=f"/{profile['slug']}/share.png")
 
 
+def run_box(article):
+    if not article.get("lab_url"):
+        return ""
+    path = article["lab_url"].split("/tree/main/")[1]
+    clone = f"git clone https://github.com/Abhimanyu9988/showmerit.git\ncd showmerit/{path}"
+    options = ""
+    if (ROOT / path / "check.sh").is_file():
+        options += (f'<div><h3>On your laptop</h3><p>Runs the app with and without the agent on your own machine. Free, and needs Docker. '
+                    f'It doesn't use AWS or Splunk.</p><pre><code>{e(clone)}\nbash check.sh</code></pre></div>')
+        options += ('<div><h3>In your browser</h3><p>Opens a ready-made workspace with Docker and the tools installed. Needs a GitHub account.</p>'
+                    '<p><a class="button" href="https://codespaces.new/Abhimanyu9988/showmerit?quickstart=1">Open in Codespaces</a></p>'
+                    f'<pre><code>cd {e(path)}\nbash check.sh</code></pre></div>')
+    build = next((m for m in re.findall(r'<h2 id="([^"]+)">', article["body"]) if m.startswith(("build", "how-to-build", "run-it", "reproduce"))), "")
+    jump = f'<a href="#{build}">Follow the steps below</a>' if build else "Follow the steps in this article"
+    options += (f'<div><h3>On your AWS account</h3><p>The full lab with your own AWS account and Splunk token. {jump}, '
+                'then run its clean up step so nothing keeps running.</p>'
+                f'<pre><code>{e(clone)}</code></pre></div>')
+    return f'<section class="run wrap" aria-labelledby="run-title"><h2 id="run-title">Run this yourself</h2><div class="options">{options}</div></section>'
+
+
 def article_page(profile, article, others):
     ticket = [f'<b><a href="/{profile["slug"]}/">{e(profile["name"])}</a></b>', f'<span>Published {full(article["date"])}</span>',
               f'<span>{article["minutes"]} min read</span>']
@@ -362,6 +382,7 @@ def article_page(profile, article, others):
     content = f"""<main><section class="head"><div class="wrap">
 <div><h1>{e(article['title'])}</h1><p class="desc">{e(article['description'])}</p></div>
 <div class="ticket">{''.join(ticket)}</div></div></section>
+{run_box(article)}
 <article class="prose wrap">{article['body']}</article>
 <section class="next wrap"><h2>Read next</h2><ul class="ledger">{article_row(others[0])}</ul>
 <p class="more">{e(profile['lede'])} <a href="/{profile['slug']}/">See the proof</a></p></section></main>"""

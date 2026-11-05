@@ -10,8 +10,8 @@ tags:
 - eks
 - keda
 - splunk
-lab_url: https://github.com/Abhimanyu9988/Abhimanyu9988.github.io/tree/main/labs/eks-app-slow-cpu-fine-scale-on-splunk-latency-with-keda
-evidence_url: https://github.com/Abhimanyu9988/Abhimanyu9988.github.io/tree/main/labs/eks-app-slow-cpu-fine-scale-on-splunk-latency-with-keda/evidence
+lab_url: https://github.com/Abhimanyu9988/showmerit/tree/main/labs/eks-app-slow-cpu-fine-scale-on-splunk-latency-with-keda
+evidence_url: https://github.com/Abhimanyu9988/showmerit/tree/main/labs/eks-app-slow-cpu-fine-scale-on-splunk-latency-with-keda/evidence
 region: eu-central-1
 ---
 
@@ -82,8 +82,8 @@ Prerequisites: an AWS account, a Splunk Observability Cloud org, an ingest token
 This creates a 2-node EKS cluster with self-managed `t3.large` EC2 nodes in public subnets.
 
 ```bash
-git clone https://github.com/Abhimanyu9988/Abhimanyu9988.github.io.git
-cd Abhimanyu9988.github.io/labs/eks-app-slow-cpu-fine-scale-on-splunk-latency-with-keda
+git clone https://github.com/Abhimanyu9988/showmerit.git
+cd showmerit/labs/eks-app-slow-cpu-fine-scale-on-splunk-latency-with-keda
 
 export AWS_REGION=eu-central-1
 export LAB_NAME=scale-an-eks-app-on-requ-041971
@@ -202,23 +202,23 @@ The lab cleanup removed the Helm releases and namespaces, and the final destroy 
 
 Everything above runs from these files. Open any of them to copy it, or clone the repo as shown:
 
-- [`README.md`](https://github.com/Abhimanyu9988/Abhimanyu9988.github.io/blob/main/labs/eks-app-slow-cpu-fine-scale-on-splunk-latency-with-keda/README.md)
-- [`cleanup.sh`](https://github.com/Abhimanyu9988/Abhimanyu9988.github.io/blob/main/labs/eks-app-slow-cpu-fine-scale-on-splunk-latency-with-keda/cleanup.sh)
-- [`fix.sh`](https://github.com/Abhimanyu9988/Abhimanyu9988.github.io/blob/main/labs/eks-app-slow-cpu-fine-scale-on-splunk-latency-with-keda/fix.sh)
-- [`k8s/00-namespace.yaml`](https://github.com/Abhimanyu9988/Abhimanyu9988.github.io/blob/main/labs/eks-app-slow-cpu-fine-scale-on-splunk-latency-with-keda/k8s/00-namespace.yaml)
-- [`k8s/10-app.yaml`](https://github.com/Abhimanyu9988/Abhimanyu9988.github.io/blob/main/labs/eks-app-slow-cpu-fine-scale-on-splunk-latency-with-keda/k8s/10-app.yaml)
-- [`k8s/20-loadgen.yaml`](https://github.com/Abhimanyu9988/Abhimanyu9988.github.io/blob/main/labs/eks-app-slow-cpu-fine-scale-on-splunk-latency-with-keda/k8s/20-loadgen.yaml)
-- [`main.tf`](https://github.com/Abhimanyu9988/Abhimanyu9988.github.io/blob/main/labs/eks-app-slow-cpu-fine-scale-on-splunk-latency-with-keda/main.tf)
-- [`providers.tf`](https://github.com/Abhimanyu9988/Abhimanyu9988.github.io/blob/main/labs/eks-app-slow-cpu-fine-scale-on-splunk-latency-with-keda/providers.tf)
-- [`reproduce.sh`](https://github.com/Abhimanyu9988/Abhimanyu9988.github.io/blob/main/labs/eks-app-slow-cpu-fine-scale-on-splunk-latency-with-keda/reproduce.sh)
-- [`evidence/`](https://github.com/Abhimanyu9988/Abhimanyu9988.github.io/tree/main/labs/eks-app-slow-cpu-fine-scale-on-splunk-latency-with-keda/evidence): the raw output of my run
+- [`README.md`](https://github.com/Abhimanyu9988/showmerit/blob/main/labs/eks-app-slow-cpu-fine-scale-on-splunk-latency-with-keda/README.md)
+- [`cleanup.sh`](https://github.com/Abhimanyu9988/showmerit/blob/main/labs/eks-app-slow-cpu-fine-scale-on-splunk-latency-with-keda/cleanup.sh)
+- [`fix.sh`](https://github.com/Abhimanyu9988/showmerit/blob/main/labs/eks-app-slow-cpu-fine-scale-on-splunk-latency-with-keda/fix.sh)
+- [`k8s/00-namespace.yaml`](https://github.com/Abhimanyu9988/showmerit/blob/main/labs/eks-app-slow-cpu-fine-scale-on-splunk-latency-with-keda/k8s/00-namespace.yaml)
+- [`k8s/10-app.yaml`](https://github.com/Abhimanyu9988/showmerit/blob/main/labs/eks-app-slow-cpu-fine-scale-on-splunk-latency-with-keda/k8s/10-app.yaml)
+- [`k8s/20-loadgen.yaml`](https://github.com/Abhimanyu9988/showmerit/blob/main/labs/eks-app-slow-cpu-fine-scale-on-splunk-latency-with-keda/k8s/20-loadgen.yaml)
+- [`main.tf`](https://github.com/Abhimanyu9988/showmerit/blob/main/labs/eks-app-slow-cpu-fine-scale-on-splunk-latency-with-keda/main.tf)
+- [`providers.tf`](https://github.com/Abhimanyu9988/showmerit/blob/main/labs/eks-app-slow-cpu-fine-scale-on-splunk-latency-with-keda/providers.tf)
+- [`reproduce.sh`](https://github.com/Abhimanyu9988/showmerit/blob/main/labs/eks-app-slow-cpu-fine-scale-on-splunk-latency-with-keda/reproduce.sh)
+- [`evidence/`](https://github.com/Abhimanyu9988/showmerit/tree/main/labs/eks-app-slow-cpu-fine-scale-on-splunk-latency-with-keda/evidence): the raw output of my run
 
 ## Sources
 
 - [KEDA Splunk Observability scaler](https://keda.sh/docs/latest/scalers/splunk-observability/)
-- [Lab code and raw output](https://github.com/Abhimanyu9988/Abhimanyu9988.github.io/tree/main/labs/eks-app-slow-cpu-fine-scale-on-splunk-latency-with-keda)
+- [Lab code and raw output](https://github.com/Abhimanyu9988/showmerit/tree/main/labs/eks-app-slow-cpu-fine-scale-on-splunk-latency-with-keda)
 
 Disclosure: I work at Splunk, part of Cisco. This is my personal writing; the post isn't sponsored or reviewed by my employer.
 
 ---
-_I built this in a disposable AWS lab. The [lab code and raw output](https://github.com/Abhimanyu9988/Abhimanyu9988.github.io/tree/main/labs/eks-app-slow-cpu-fine-scale-on-splunk-latency-with-keda) are public. Drafted with AI assistance and reviewed by me._
+_I built this in a disposable AWS lab. The [lab code and raw output](https://github.com/Abhimanyu9988/showmerit/tree/main/labs/eks-app-slow-cpu-fine-scale-on-splunk-latency-with-keda) are public. Drafted with AI assistance and reviewed by me._

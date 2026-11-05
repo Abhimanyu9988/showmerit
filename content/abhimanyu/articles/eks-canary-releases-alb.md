@@ -10,8 +10,8 @@ tags:
 - eks
 - kubernetes
 - devops
-lab_url: https://github.com/Abhimanyu9988/Abhimanyu9988.github.io/tree/main/labs/eks-canary-releases-alb
-evidence_url: https://github.com/Abhimanyu9988/Abhimanyu9988.github.io/tree/main/labs/eks-canary-releases-alb/evidence
+lab_url: https://github.com/Abhimanyu9988/showmerit/tree/main/labs/eks-canary-releases-alb
+evidence_url: https://github.com/Abhimanyu9988/showmerit/tree/main/labs/eks-canary-releases-alb/evidence
 region: eu-central-1
 ---
 
@@ -62,8 +62,8 @@ You need Terraform, the AWS CLI v2, kubectl, helm, jq and curl, plus an AWS acco
 This creates an EKS 1.31 cluster with two `t3.medium` workers, the Pod Identity agent and the IAM role for the controller.
 
 ```bash
-git clone https://github.com/Abhimanyu9988/Abhimanyu9988.github.io.git
-cd Abhimanyu9988.github.io/labs/eks-canary-releases-alb
+git clone https://github.com/Abhimanyu9988/showmerit.git
+cd showmerit/labs/eks-canary-releases-alb
 export AWS_REGION=eu-central-1
 export LAB_NAME=canary
 export TF_VAR_lab_name="$LAB_NAME"
@@ -159,4 +159,4 @@ terraform destroy
 - [Amazon EKS Pod Identities](https://docs.aws.amazon.com/eks/latest/userguide/pod-identities.html)
 
 ---
-_I built this in a disposable AWS lab. The [lab code and raw output](https://github.com/Abhimanyu9988/Abhimanyu9988.github.io/tree/main/labs/eks-canary-releases-alb) are public. Drafted with AI assistance and reviewed by me._
+_I built this in a disposable AWS lab. The [lab code and raw output](https://github.com/Abhimanyu9988/showmerit/tree/main/labs/eks-canary-releases-alb) are public. Drafted with AI assistance and reviewed by me._

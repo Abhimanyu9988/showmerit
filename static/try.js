@@ -50,6 +50,7 @@
       say("Enter a GitHub username, such as torvalds.");
       return;
     }
+    window.goatcounter?.count?.({ path: "try-box", title: "Try-it box used", event: true });
     say("Finding your merged work on GitHub...");
     const query = encodeURIComponent(`author:${user} is:pr is:merged -user:${user}`);
     try {
