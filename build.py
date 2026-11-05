@@ -357,11 +357,8 @@ def run_box(article):
     clone = f"git clone https://github.com/Abhimanyu9988/showmerit.git\ncd showmerit/{path}"
     options = ""
     if (ROOT / path / "check.sh").is_file():
-        options += (f'<div><h3>On your laptop</h3><p>Runs the app with and without the agent on your own machine. Free, and needs Docker. '
+        options += (f'<div><h3>On your laptop</h3><p>Runs the app with and without the agent on your own machine and counts what the agent reports. Free, needs Docker, and took about 2 minutes in our test. '
                     f'It uses no AWS or Splunk.</p><pre><code>{e(clone)}\nbash check.sh</code></pre></div>')
-        options += ('<div><h3>In your browser</h3><p>Opens a ready-made workspace with Docker and the tools installed. Needs a GitHub account.</p>'
-                    '<p><a class="button" href="https://codespaces.new/Abhimanyu9988/showmerit?quickstart=1">Open in Codespaces</a></p>'
-                    f'<pre><code>cd {e(path)}\nbash check.sh</code></pre></div>')
     build = next((m for m in re.findall(r'<h2 id="([^"]+)">', article["body"]) if m.startswith(("build", "how-to-build", "run-it", "reproduce"))), "")
     jump = f'<a href="#{build}">Follow the steps below</a>' if build else "Follow the steps in this article"
     options += (f'<div><h3>On your AWS account</h3><p>The full lab with your own AWS account and Splunk token. {jump}, '
