@@ -1,0 +1,63 @@
+[
+ {
+  "id": "kubestronaut",
+  "title": "Kubestronaut",
+  "issuer": "CNCF",
+  "earned_badge": "kubestronaut",
+  "source": "https://training.linuxfoundation.org/?p=30274",
+  "requires": [
+   "KCNA",
+   "KCSA",
+   "CKA",
+   "CKAD",
+   "CKS"
+  ]
+ },
+ {
+  "id": "golden-kubestronaut",
+  "title": "Golden Kubestronaut",
+  "issuer": "CNCF",
+  "earned_badge": "golden kubestronaut",
+  "source": "https://training.linuxfoundation.org/?p=30274",
+  "requires": [
+   "KCNA",
+   "KCSA",
+   "CKA",
+   "CKAD",
+   "CKS",
+   "PCA",
+   "ICA",
+   "CCA",
+   "CAPA",
+   "CGOA",
+   "CBA",
+   "OTCA",
+   "KCA",
+   "CNPA",
+   "CNPE",
+   "LFCS"
+  ]
+ },
+ {
+  "id": "aws-all",
+  "title": "All AWS certifications",
+  "issuer": "AWS",
+  "active_only": true,
+  "note": "This is the certification part of the AWS Golden Jacket, and only current certifications count. The list follows AWS's exam guides.",
+  "source": "https://docs.aws.amazon.com/aws-certification/latest/examguides/aws-certification-exam-guides.html",
+  "requires_names": {
+   "CLF": "cloud practitioner",
+   "AIF": "ai practitioner",
+   "SAA": "solutions architect - associate",
+   "DVA": "developer - associate",
+   "SOA": "cloudops engineer - associate",
+   "DEA": "data engineer - associate",
+   "MLA": "machine learning engineer - associate",
+   "SAP": "solutions architect - professional",
+   "DOP": "devops engineer - professional",
+   "AIP": "generative ai developer - professional",
+   "SCS": "security - specialty",
+   "ANS": "advanced networking - specialty"
+  }
+ }
+]

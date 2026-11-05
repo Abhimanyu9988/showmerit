@@ -44,6 +44,8 @@ if profile.is_file():
     groups = [int(n) for n in re.findall(r"<h2>(?:Code owner|Standards|Fixes and docs) \((\d+)\)</h2>", text)]
     if sum(groups) != facts.get("merged pull requests"):
         problems.append(f"profile: groups {groups} don't add up to {facts.get('merged pull requests')}")
+    if facts.get("current credentials", 0) != text.count("data-cert"):
+        problems.append("profile: credentials count doesn't match the list")
     if text.count('class="pr ') > facts.get("merged pull requests", 0):
         problems.append("profile: chart shows more marks than the count")
 

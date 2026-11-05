@@ -15,8 +15,7 @@ jobs:
         with: { python-version: "3.12" }
       - run: pip install -r requirements.txt
       - name: Refresh pull requests, keeping saved data if GitHub fails
-        if: github.event_name != 'pull_request'
-        run: python tools/refresh.py || true
+        run: python tools/refresh.py
         env: { GITHUB_TOKEN: "${{ github.token }}" }
       - run: python build.py
       - run: python tools/check.py

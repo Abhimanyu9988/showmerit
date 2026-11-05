@@ -90,6 +90,39 @@ def load_articles(profile):
     return sorted(articles, key=lambda a: a["date"], reverse=True)
 
 
+def load_badges():
+    return json.loads((ROOT / "data/credly.json").read_text())
+
+
+def clean(text):
+    return re.sub(r"[\u2013\u2014]", "-", text).lower()
+
+
+def holds(badge, code, title):
+    """A badge counts if it is the named exam, and is still valid when the title needs active certifications."""
+    name = clean(badge["name"])
+    if title.get("active_only") and badge.get("expires") and badge["expires"] < datetime.date.today().isoformat():
+        return False
+    wanted = title.get("requires_names", {}).get(code)
+    return wanted in name if wanted else name.startswith(code.lower() + ":") or name == code.lower()
+
+
+def goal(title, badges):
+    codes = title.get("requires") or list(title["requires_names"])
+    steps = [{"code": c, "badge": next((b for b in badges if holds(b, c, title)), None)} for c in codes]
+    done = sum(bool(s["badge"]) for s in steps)
+    earned = any(clean(b["name"]) == title.get("earned_badge") for b in badges)
+    return {**title, "steps": steps, "done": done, "total": len(steps), "earned": earned}
+
+
+def load_goals(profile, badges):
+    """Show a title when someone has started it or pinned it, until they earn it."""
+    titles = json.loads((ROOT / "data/titles.json").read_text())
+    goals = [goal(t, badges) for t in titles]
+    shown = [g for g in goals if not g["earned"] and g["done"] < g["total"] and (g["done"] or g["id"] in profile["goals"])]
+    return sorted(shown, key=lambda g: g["done"] / g["total"], reverse=True), [g for g in goals if g["earned"]]
+
+
 def page(title, description, path, content, image="/share.png", kind="website"):
     canonical = SITE + path
     return f"""<!doctype html>
@@ -163,9 +196,63 @@ def chart(rows, today):
 </div></section>"""
 
 
-def facts(rows, articles):
+def goals_section(goals):
+    if not goals:
+        return ""
+    cards = ""
+    for g in goals:
+        stamps = ""
+        for s in g["steps"]:
+            if s["badge"]:
+                stamps += f'<a class="stamp done" href="{e(s["badge"]["url"])}" aria-label="{e(s["code"])}: passed, open proof">{e(s["code"])}</a>'
+            else:
+                stamps += f'<span class="stamp" aria-label="{e(s["code"])}: to go">{e(s["code"])}</span>'
+        left = g["total"] - g["done"]
+        names = ", ".join(s["code"] for s in g["steps"] if not s["badge"])
+        word = "certification" if left == 1 else "certifications"
+        note = f'<p class="note">{e(g["note"])}</p>' if g.get("note") else ""
+        cards += (f'<div class="goal"><h3>{e(g["title"])}</h3><p><b>{g["done"]} of {g["total"]} done.</b> '
+                  f'{left} {word} to go: {e(names)}.</p><div class="stamps">{stamps}</div>{note}'
+                  f'<p class="note"><a href="{e(g["source"])}">Requirements</a></p></div>')
+    return f'<section class="group wrap"><h2>Goals ({len(goals)})</h2>{cards}</section>'
+
+
+def current(badge, today):
+    return not badge.get("expires") or badge["expires"] >= today
+
+
+def cert_row(b, earned, count=True):
+    title = b["name"]
+    issued = short(b["issued"]) + " " + b["issued"][:4] if b.get("issued") else "Credly"
+    highlight = " owner" if title in earned else ""
+    mark = " data-cert" if count else ""
+    return (f'<li{mark}><div class="claim">{e(title)}<small>{e(b.get("issuer") or "Credly")}</small></div>'
+            f'<a class="stub{highlight}" href="{e(b["url"])}" aria-label="Proof on Credly: {e(title)}">'
+            f'<span>Credly</span><span>{issued}</span></a></li>')
+
+
+def certs_section(badges, earned_titles, today):
+    if not badges:
+        return ""
+    earned = {g["title"] for g in earned_titles}
+    now = today.isoformat()
+    active = sorted([b for b in badges if current(b, now)], key=lambda b: b["name"] not in earned)
+    earlier = [b for b in badges if not current(b, now)]
+    more = ""
+    if earlier:
+        more = (f'<details><summary>{len(earlier)} earlier credentials</summary><ul class="ledger" style="margin-top:10px">'
+                f'{"".join(cert_row(b, earned, False) for b in earlier)}</ul></details>')
+    return (f'<section class="group wrap"><h2>Credentials ({len(active)})</h2>'
+            f'<ul class="ledger">{"".join(cert_row(b, earned) for b in active)}</ul>{more}</section>')
+
+
+def facts(rows, articles, badges):
     items = [(len(rows), "merged pull requests"), (len({r["repo"] for r in rows}), "projects"),
-             (sum(r["kind"] == "owner" for r in rows), "code owner roles"), (len(articles), "articles")]
+             (sum(r["kind"] == "owner" for r in rows), "code owner roles")]
+    active = sum(current(b, datetime.date.today().isoformat()) for b in badges)
+    if active:
+        items.append((active, "current credentials"))
+    items.append((len(articles), "articles"))
     return '<dl class="facts">' + "".join(f"<div><dt>{k}</dt><dd>{v}</dd></div>" for v, k in items) + "</dl>"
 
 
@@ -207,7 +294,7 @@ def home(profile, rows, articles):
                 "/", content)
 
 
-def profile_page(profile, rows, articles, today):
+def profile_page(profile, rows, articles, today, badges, goals, earned):
     groups = ""
     for kind, name in GROUPS:
         items = [r for r in rows if r["kind"] == kind]
@@ -217,9 +304,11 @@ def profile_page(profile, rows, articles, today):
     links = "".join(f'<a href="{e(l["url"])}">{e(l["label"])}</a>' for l in profile["links"])
     content = f"""<main>
 <section class="person wrap"><h1>{e(profile['name'])}</h1><p>{e(profile['lede'])}</p>
-<div class="links">{links}</div>{facts(rows, articles)}</section>
+<div class="links">{links}</div>{facts(rows, articles, badges)}</section>
 {chart(rows, today)}
+{goals_section(goals)}
 {groups}
+{certs_section(badges, earned, today)}
 <section class="group wrap"><h2>Articles ({len(articles)})</h2>
 <ul class="ledger">{''.join(article_row(a) for a in articles)}</ul></section>
 </main>"""
@@ -281,7 +370,10 @@ def main():
     shutil.copytree(ROOT / "static", OUT)
     slug = profile["slug"]
     write("/", home(profile, rows, articles))
-    write(f"/{slug}/", profile_page(profile, rows, articles, today))
+    badges = load_badges()
+    goals, earned = load_goals(profile, badges)
+    print(f"Goals: {[(g['title'], g['done'], g['total']) for g in goals]}. Earned: {[g['title'] for g in earned]}")
+    write(f"/{slug}/", profile_page(profile, rows, articles, today, badges, goals, earned))
     write(f"/{slug}/articles/", articles_page(profile, articles))
     for i, article in enumerate(articles):
         write(article["url"], article_page(profile, article, articles[(i + 1) % len(articles):] + articles))
