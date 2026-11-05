@@ -20,6 +20,7 @@ jobs:
         env: { GITHUB_TOKEN: "${{ github.token }}" }
       - run: python build.py
       - run: python tools/check.py
+      - run: python tests/test_dns_setup.py
       - uses: actions/upload-pages-artifact@v3
         if: github.event_name != 'pull_request'
         with: { path: _site }
