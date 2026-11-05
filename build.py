@@ -141,6 +141,7 @@ def page(title, description, path, content, image="/share.png", kind="website", 
 <meta property="og:url" content="{canonical}"><meta property="og:image" content="{SITE}{image}">
 <meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
+<script>if (location.protocol === "http:" && location.hostname.endsWith("showmerit.com")) location.replace("https://showmerit.com" + location.pathname + location.search + location.hash);</script>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/style.css">
 <script data-goatcounter="{GOATCOUNTER}" async src="https://gc.zgo.at/count.js"></script>
