@@ -10,8 +10,8 @@ tags:
 - eks
 - opentelemetry
 - java
-lab_url: https://github.com/Abhimanyu9988/Abhimanyu9988.github.io/tree/main/labs/trace-a-java-service-on-eks-with-one-annotation-zero-code
-evidence_url: https://github.com/Abhimanyu9988/Abhimanyu9988.github.io/tree/main/labs/trace-a-java-service-on-eks-with-one-annotation-zero-code/evidence
+lab_url: https://github.com/Abhimanyu9988/showmerit/tree/main/labs/trace-a-java-service-on-eks-with-one-annotation-zero-code
+evidence_url: https://github.com/Abhimanyu9988/showmerit/tree/main/labs/trace-a-java-service-on-eks-with-one-annotation-zero-code/evidence
 region: eu-central-1
 ---
 
@@ -64,8 +64,8 @@ On rollout, the Operator adds an init container, copies the Java agent into the 
 This creates a VPC, an EKS cluster, and two self-managed `t3.medium` worker nodes joined with `nodeadm`.
 
 ```bash
-git clone https://github.com/Abhimanyu9988/Abhimanyu9988.github.io.git
-cd Abhimanyu9988.github.io/labs/trace-a-java-service-on-eks-with-one-annotation-zero-code
+git clone https://github.com/Abhimanyu9988/showmerit.git
+cd showmerit/labs/trace-a-java-service-on-eks-with-one-annotation-zero-code
 export AWS_REGION=eu-central-1 LAB_NAME=otel-java TF_VAR_lab_name=otel-java
 terraform init && terraform apply -auto-approve
 ./reproduce.sh
@@ -295,16 +295,16 @@ terraform destroy -auto-approve
 
 Everything above runs from these files. Open any of them to copy it, or clone the repo as shown:
 
-- [`README.md`](https://github.com/Abhimanyu9988/Abhimanyu9988.github.io/blob/main/labs/trace-a-java-service-on-eks-with-one-annotation-zero-code/README.md)
-- [`cleanup.sh`](https://github.com/Abhimanyu9988/Abhimanyu9988.github.io/blob/main/labs/trace-a-java-service-on-eks-with-one-annotation-zero-code/cleanup.sh)
-- [`fix.sh`](https://github.com/Abhimanyu9988/Abhimanyu9988.github.io/blob/main/labs/trace-a-java-service-on-eks-with-one-annotation-zero-code/fix.sh)
-- [`k8s/app.yaml`](https://github.com/Abhimanyu9988/Abhimanyu9988.github.io/blob/main/labs/trace-a-java-service-on-eks-with-one-annotation-zero-code/k8s/app.yaml)
-- [`k8s/collector.yaml`](https://github.com/Abhimanyu9988/Abhimanyu9988.github.io/blob/main/labs/trace-a-java-service-on-eks-with-one-annotation-zero-code/k8s/collector.yaml)
-- [`k8s/instrumentation.yaml`](https://github.com/Abhimanyu9988/Abhimanyu9988.github.io/blob/main/labs/trace-a-java-service-on-eks-with-one-annotation-zero-code/k8s/instrumentation.yaml)
-- [`main.tf`](https://github.com/Abhimanyu9988/Abhimanyu9988.github.io/blob/main/labs/trace-a-java-service-on-eks-with-one-annotation-zero-code/main.tf)
-- [`providers.tf`](https://github.com/Abhimanyu9988/Abhimanyu9988.github.io/blob/main/labs/trace-a-java-service-on-eks-with-one-annotation-zero-code/providers.tf)
-- [`reproduce.sh`](https://github.com/Abhimanyu9988/Abhimanyu9988.github.io/blob/main/labs/trace-a-java-service-on-eks-with-one-annotation-zero-code/reproduce.sh)
-- [`evidence/`](https://github.com/Abhimanyu9988/Abhimanyu9988.github.io/tree/main/labs/trace-a-java-service-on-eks-with-one-annotation-zero-code/evidence): the raw output of my run
+- [`README.md`](https://github.com/Abhimanyu9988/showmerit/blob/main/labs/trace-a-java-service-on-eks-with-one-annotation-zero-code/README.md)
+- [`cleanup.sh`](https://github.com/Abhimanyu9988/showmerit/blob/main/labs/trace-a-java-service-on-eks-with-one-annotation-zero-code/cleanup.sh)
+- [`fix.sh`](https://github.com/Abhimanyu9988/showmerit/blob/main/labs/trace-a-java-service-on-eks-with-one-annotation-zero-code/fix.sh)
+- [`k8s/app.yaml`](https://github.com/Abhimanyu9988/showmerit/blob/main/labs/trace-a-java-service-on-eks-with-one-annotation-zero-code/k8s/app.yaml)
+- [`k8s/collector.yaml`](https://github.com/Abhimanyu9988/showmerit/blob/main/labs/trace-a-java-service-on-eks-with-one-annotation-zero-code/k8s/collector.yaml)
+- [`k8s/instrumentation.yaml`](https://github.com/Abhimanyu9988/showmerit/blob/main/labs/trace-a-java-service-on-eks-with-one-annotation-zero-code/k8s/instrumentation.yaml)
+- [`main.tf`](https://github.com/Abhimanyu9988/showmerit/blob/main/labs/trace-a-java-service-on-eks-with-one-annotation-zero-code/main.tf)
+- [`providers.tf`](https://github.com/Abhimanyu9988/showmerit/blob/main/labs/trace-a-java-service-on-eks-with-one-annotation-zero-code/providers.tf)
+- [`reproduce.sh`](https://github.com/Abhimanyu9988/showmerit/blob/main/labs/trace-a-java-service-on-eks-with-one-annotation-zero-code/reproduce.sh)
+- [`evidence/`](https://github.com/Abhimanyu9988/showmerit/tree/main/labs/trace-a-java-service-on-eks-with-one-annotation-zero-code/evidence): the raw output of my run
 
 ## Sources
 
@@ -312,4 +312,4 @@ Everything above runs from these files. Open any of them to copy it, or clone th
 - [OpenTelemetry automatic instrumentation with the Operator](https://opentelemetry.io/docs/platforms/kubernetes/operator/automatic/)
 
 ---
-_I built this in a disposable AWS lab. The [lab code and raw output](https://github.com/Abhimanyu9988/Abhimanyu9988.github.io/tree/main/labs/trace-a-java-service-on-eks-with-one-annotation-zero-code) are public. Drafted with AI assistance and reviewed by me._
+_I built this in a disposable AWS lab. The [lab code and raw output](https://github.com/Abhimanyu9988/showmerit/tree/main/labs/trace-a-java-service-on-eks-with-one-annotation-zero-code) are public. Drafted with AI assistance and reviewed by me._

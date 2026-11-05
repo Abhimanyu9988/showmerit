@@ -1,0 +1,23 @@
+name: run-box
+on:
+  pull_request:
+    paths: [".devcontainer/**", "labs/**", ".github/workflows/run-box.yml"]
+  workflow_dispatch:
+permissions: { contents: read }
+jobs:
+  laptop:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash check.sh
+        working-directory: labs/opentelemetry-java-agent-in-splunk-apm-one-env-var-zero-code
+  workspace:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: devcontainers/ci@v0.3
+        with:
+          push: never
+          runCmd: docker --version && python3 --version && terraform version && aws --version && kubectl version --client

@@ -9,8 +9,8 @@ tags:
 - ecs
 - fargate
 - devops
-lab_url: https://github.com/Abhimanyu9988/Abhimanyu9988.github.io/tree/main/labs/scale-to-zero-sqs-workers-on-ecs-fargate
-evidence_url: https://github.com/Abhimanyu9988/Abhimanyu9988.github.io/tree/main/labs/scale-to-zero-sqs-workers-on-ecs-fargate/evidence
+lab_url: https://github.com/Abhimanyu9988/showmerit/tree/main/labs/scale-to-zero-sqs-workers-on-ecs-fargate
+evidence_url: https://github.com/Abhimanyu9988/showmerit/tree/main/labs/scale-to-zero-sqs-workers-on-ecs-fargate/evidence
 region: eu-central-1
 ---
 
@@ -107,8 +107,8 @@ You need AWS CLI, Terraform, `jq`, and GNU `date`. The lab uses eu-central-1 thr
 1. Get the lab.
 
 ```bash
-git clone https://github.com/Abhimanyu9988/Abhimanyu9988.github.io.git
-cd Abhimanyu9988.github.io/labs/scale-to-zero-sqs-workers-on-ecs-fargate
+git clone https://github.com/Abhimanyu9988/showmerit.git
+cd showmerit/labs/scale-to-zero-sqs-workers-on-ecs-fargate
 ```
 
 In `providers.tf`, set `permissions_boundary` to `null` for your own account if you do not use an IAM permissions boundary.
@@ -473,4 +473,4 @@ If your scale-to-zero ECS worker depends on a metric from running tasks, test th
 - [Stack Overflow: ECS Fargate SQS autoscaling with min capacity 0](https://stackoverflow.com/questions/80006730/aws-ecs-fargate-sqs-autoscaling-with-min-capacity-0-how-to-bootstrap-from-0-tas)
 
 ---
-_I reproduced this in a disposable AWS lab. The [lab code and raw output](https://github.com/Abhimanyu9988/Abhimanyu9988.github.io/tree/main/labs/scale-to-zero-sqs-workers-on-ecs-fargate) are public. Drafted with AI assistance and reviewed by me._
+_I reproduced this in a disposable AWS lab. The [lab code and raw output](https://github.com/Abhimanyu9988/showmerit/tree/main/labs/scale-to-zero-sqs-workers-on-ecs-fargate) are public. Drafted with AI assistance and reviewed by me._
