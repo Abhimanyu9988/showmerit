@@ -1,0 +1,100 @@
+[
+ {
+  "date": "2026-11-02",
+  "repo": "open-telemetry/opentelemetry-collector-contrib",
+  "number": 52485,
+  "title": "[chore] receiver/flinkmetrics: update tested Flink versions and correct README configuration",
+  "url": "https://github.com/open-telemetry/opentelemetry-collector-contrib/pull/52485"
+ },
+ {
+  "date": "2026-10-30",
+  "repo": "open-telemetry/opentelemetry-collector-contrib",
+  "number": 52500,
+  "title": "[exporter/azuredataexplorer] Add Abhimanyu9988 as code owner and restore beta stability",
+  "url": "https://github.com/open-telemetry/opentelemetry-collector-contrib/pull/52500"
+ },
+ {
+  "date": "2026-10-28",
+  "repo": "open-telemetry/opentelemetry-helm-charts",
+  "number": 2473,
+  "title": "docs(operator): explain autoGenerateCert behavior with Argo CD",
+  "url": "https://github.com/open-telemetry/opentelemetry-helm-charts/pull/2473"
+ },
+ {
+  "date": "2026-10-27",
+  "repo": "open-telemetry/opentelemetry-collector-contrib",
+  "number": 52406,
+  "title": "[chore] receiver/flinkmetrics: match operator metrics on exact suffix",
+  "url": "https://github.com/open-telemetry/opentelemetry-collector-contrib/pull/52406"
+ },
+ {
+  "date": "2026-10-26",
+  "repo": "open-telemetry/opentelemetry-collector-contrib",
+  "number": 52019,
+  "title": "[chore][receiver/flinkmetrics] Add Abhimanyu9988 as code owner",
+  "url": "https://github.com/open-telemetry/opentelemetry-collector-contrib/pull/52019"
+ },
+ {
+  "date": "2026-10-20",
+  "repo": "open-telemetry/semantic-conventions",
+  "number": 4219,
+  "title": "[k8s] Add Pod and container memory limit and request utilization metrics",
+  "url": "https://github.com/open-telemetry/semantic-conventions/pull/4219"
+ },
+ {
+  "date": "2026-10-20",
+  "repo": "open-telemetry/semantic-conventions",
+  "number": 4184,
+  "title": "[k8s] Clarify memory working set metric descriptions",
+  "url": "https://github.com/open-telemetry/semantic-conventions/pull/4184"
+ },
+ {
+  "date": "2026-10-20",
+  "repo": "open-telemetry/semantic-conventions",
+  "number": 4158,
+  "title": "[k8s] Add Pod level memory limit and request metrics",
+  "url": "https://github.com/open-telemetry/semantic-conventions/pull/4158"
+ },
+ {
+  "date": "2026-10-13",
+  "repo": "open-telemetry/opentelemetry-helm-charts",
+  "number": 2456,
+  "title": "fix(operator): allow overriding only manager.targetAllocatorImage.repository",
+  "url": "https://github.com/open-telemetry/opentelemetry-helm-charts/pull/2456"
+ },
+ {
+  "date": "2026-10-12",
+  "repo": "Appdynamics/datapower-monitoring-extension",
+  "number": 13,
+  "title": "Fix startup failure on Java 11+ by removing SAAJ dependency (2.0.2)",
+  "url": "https://github.com/Appdynamics/datapower-monitoring-extension/pull/13"
+ },
+ {
+  "date": "2026-10-06",
+  "repo": "open-telemetry/opentelemetry-collector-contrib",
+  "number": 51657,
+  "title": "[chore][internal/k8sinventory] Fix flaky cache sync tests",
+  "url": "https://github.com/open-telemetry/opentelemetry-collector-contrib/pull/51657"
+ },
+ {
+  "date": "2026-09-21",
+  "repo": "open-telemetry/opentelemetry-collector-contrib",
+  "number": 51138,
+  "title": "[chore] [receiver/sqlserver] Document TLS handshake failures on Windows Server 2012 R2 and older",
+  "url": "https://github.com/open-telemetry/opentelemetry-collector-contrib/pull/51138"
+ },
+ {
+  "date": "2025-02-03",
+  "repo": "cncf/people",
+  "number": 855,
+  "title": "Updated Abhimanyu Bajaj's country in people.json",
+  "url": "https://github.com/cncf/people/pull/855"
+ },
+ {
+  "date": "2019-05-05",
+  "repo": "dharam-jakhar/cloudbox",
+  "number": 3,
+  "title": "merge",
+  "url": "https://github.com/dharam-jakhar/cloudbox/pull/3"
+ }
+]
