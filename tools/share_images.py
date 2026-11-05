@@ -38,6 +38,8 @@ async def main():
             (ROOT / f"static/{slug}/share.png", card("Every line links to its proof.", name, line, "", f"showmerit.com/{slug}"))]
     for path in (ROOT / f"content/{slug}/articles").glob("*.md"):
         post = frontmatter.load(path)
+        if post.get("keep_share_image"):
+            continue
         date = str(post["date"])
         when = f"{MONTHS[int(date[5:7]) - 1]} {int(date[8:])}, {date[:4]}"
         jobs.append((ROOT / f"static/{slug}/articles/{path.stem}/share.png", card(post["title"], name, line, when, f"showmerit.com/{slug}")))
