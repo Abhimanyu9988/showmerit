@@ -26,7 +26,9 @@ def body(post, url, image):
     compose = "https://www.linkedin.com/feed/?shareActive=true&text=" + urllib.parse.quote(text)
     return "\n".join([
         f"**Article:** {url}", "", f"**[Open this post in LinkedIn]({compose})** with the text filled in, then tap Post.", "",
-        "**Or copy this text:**", "", "```text", text, "```", "", "**Picture:**", "", f"![LinkedIn picture]({image})"])
+        "**Or copy this text:**", "", "```text", text, "```", "",
+        "**Picture:** LinkedIn takes it from the article link, so you don't need to download it. Wait for the preview card, then post.", "",
+        f"![LinkedIn picture]({image})"])
 
 
 titles = {issue["title"] for issue in api("issues?state=all&per_page=100")}
