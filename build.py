@@ -358,7 +358,7 @@ def run_box(article):
     options = ""
     if (ROOT / path / "check.sh").is_file():
         options += (f'<div><h3>On your laptop</h3><p>Runs the app with and without the agent on your own machine. Free, and needs Docker. '
-                    f'It doesn't use AWS or Splunk.</p><pre><code>{e(clone)}\nbash check.sh</code></pre></div>')
+                    f'It uses no AWS or Splunk.</p><pre><code>{e(clone)}\nbash check.sh</code></pre></div>')
         options += ('<div><h3>In your browser</h3><p>Opens a ready-made workspace with Docker and the tools installed. Needs a GitHub account.</p>'
                     '<p><a class="button" href="https://codespaces.new/Abhimanyu9988/showmerit?quickstart=1">Open in Codespaces</a></p>'
                     f'<pre><code>cd {e(path)}\nbash check.sh</code></pre></div>')
