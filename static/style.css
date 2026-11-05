@@ -109,6 +109,14 @@ a.stub.owner:hover { color: var(--on-highlight); }
 .group h2 { font-size: 34px; margin-bottom: 12px; }
 .more { margin-top: 16px; }
 
+.goal { display: grid; gap: 8px; padding-block: 14px; border-top: 1px solid var(--line); }
+.goal h3 { margin: 0; font: 800 26px/1.1 var(--display); }
+.goal p { margin: 0; }
+.stamps { display: flex; flex-wrap: wrap; gap: 6px; }
+.stamp { min-width: 58px; padding: 6px 8px; text-align: center; border: 1px dashed var(--muted); color: var(--muted); font: 500 13px/1.2 var(--mono); text-decoration: none; }
+.stamp.done { background: var(--accent); border: 1px solid var(--accent); color: #fff; }
+a.stamp.done:hover { background: var(--ink); border-color: var(--ink); }
+
 .head { border-bottom: 1px solid var(--line); }
 .head .wrap { padding-block: 30px 34px; display: grid; grid-template-columns: minmax(0, 1fr) 268px; gap: 28px; align-items: end; }
 .head h1 { font-size: clamp(44px, 7.6vw, 80px); }
