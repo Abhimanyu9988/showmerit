@@ -1,0 +1,16 @@
+name: pages-domain
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        type: choice
+        options: [enforce, resave]
+        default: enforce
+permissions: { contents: read, pages: write }
+jobs:
+  domain:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python tools/pages_domain.py ${{ inputs.action == 'resave' && 'resave' || '' }}
+        env: { GITHUB_TOKEN: "${{ github.token }}" }
