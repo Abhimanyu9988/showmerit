@@ -217,26 +217,41 @@ def goals_section(goals):
     return f'<section class="group wrap"><h2>Goals ({len(goals)})</h2>{cards}</section>'
 
 
-def cert_row(b):
+def current(badge, today):
+    return not badge.get("expires") or badge["expires"] >= today
+
+
+def cert_row(b, earned, count=True):
     title = b["name"]
     issued = short(b["issued"]) + " " + b["issued"][:4] if b.get("issued") else "Credly"
-    return (f'<li data-cert><div class="claim">{e(title)}<small>{e(b.get("issuer") or "Credly")}</small></div>'
-            f'<a class="stub" href="{e(b["url"])}" aria-label="Proof on Credly: {e(title)}">'
+    highlight = " owner" if title in earned else ""
+    mark = " data-cert" if count else ""
+    return (f'<li{mark}><div class="claim">{e(title)}<small>{e(b.get("issuer") or "Credly")}</small></div>'
+            f'<a class="stub{highlight}" href="{e(b["url"])}" aria-label="Proof on Credly: {e(title)}">'
             f'<span>Credly</span><span>{issued}</span></a></li>')
 
 
-def certs_section(badges):
+def certs_section(badges, earned_titles, today):
     if not badges:
         return ""
-    return (f'<section class="group wrap"><h2>Certifications ({len(badges)})</h2>'
-            f'<ul class="ledger">{"".join(cert_row(b) for b in badges)}</ul></section>')
+    earned = {g["title"] for g in earned_titles}
+    now = today.isoformat()
+    active = sorted([b for b in badges if current(b, now)], key=lambda b: b["name"] not in earned)
+    earlier = [b for b in badges if not current(b, now)]
+    more = ""
+    if earlier:
+        more = (f'<details><summary>{len(earlier)} earlier credentials</summary><ul class="ledger" style="margin-top:10px">'
+                f'{"".join(cert_row(b, earned, False) for b in earlier)}</ul></details>')
+    return (f'<section class="group wrap"><h2>Credentials ({len(active)})</h2>'
+            f'<ul class="ledger">{"".join(cert_row(b, earned) for b in active)}</ul>{more}</section>')
 
 
 def facts(rows, articles, badges):
     items = [(len(rows), "merged pull requests"), (len({r["repo"] for r in rows}), "projects"),
              (sum(r["kind"] == "owner" for r in rows), "code owner roles")]
-    if badges:
-        items.append((len(badges), "certifications"))
+    active = sum(current(b, datetime.date.today().isoformat()) for b in badges)
+    if active:
+        items.append((active, "current credentials"))
     items.append((len(articles), "articles"))
     return '<dl class="facts">' + "".join(f"<div><dt>{k}</dt><dd>{v}</dd></div>" for v, k in items) + "</dl>"
 
@@ -279,7 +294,7 @@ def home(profile, rows, articles):
                 "/", content)
 
 
-def profile_page(profile, rows, articles, today, badges, goals):
+def profile_page(profile, rows, articles, today, badges, goals, earned):
     groups = ""
     for kind, name in GROUPS:
         items = [r for r in rows if r["kind"] == kind]
@@ -293,7 +308,7 @@ def profile_page(profile, rows, articles, today, badges, goals):
 {chart(rows, today)}
 {goals_section(goals)}
 {groups}
-{certs_section(badges)}
+{certs_section(badges, earned, today)}
 <section class="group wrap"><h2>Articles ({len(articles)})</h2>
 <ul class="ledger">{''.join(article_row(a) for a in articles)}</ul></section>
 </main>"""
@@ -358,7 +373,7 @@ def main():
     badges = load_badges()
     goals, earned = load_goals(profile, badges)
     print(f"Goals: {[(g['title'], g['done'], g['total']) for g in goals]}. Earned: {[g['title'] for g in earned]}")
-    write(f"/{slug}/", profile_page(profile, rows, articles, today, badges, goals))
+    write(f"/{slug}/", profile_page(profile, rows, articles, today, badges, goals, earned))
     write(f"/{slug}/articles/", articles_page(profile, articles))
     for i, article in enumerate(articles):
         write(article["url"], article_page(profile, article, articles[(i + 1) % len(articles):] + articles))
