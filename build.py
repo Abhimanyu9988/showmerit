@@ -90,9 +90,8 @@ def load_articles(profile):
     return sorted(articles, key=lambda a: a["date"], reverse=True)
 
 
-def page(title, description, path, content, image="/share.png", cobalt_bar=False, kind="website"):
+def page(title, description, path, content, image="/share.png", kind="website"):
     canonical = SITE + path
-    bar = "bar on-cobalt" if cobalt_bar else "bar"
     return f"""<!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -104,11 +103,12 @@ def page(title, description, path, content, image="/share.png", cobalt_bar=False
 <meta property="og:url" content="{canonical}"><meta property="og:image" content="{SITE}{image}">
 <meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
+<script>if (location.protocol === "http:" && location.hostname.endsWith("showmerit.com")) location.replace("https://showmerit.com" + location.pathname);</script>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/style.css">
 <script data-goatcounter="{GOATCOUNTER}" async src="https://gc.zgo.at/count.js"></script>
 </head><body>
-<header class="{bar}"><div class="wrap"><a class="brand" href="/">ShowMerit</a>
+<header class="bar"><div class="wrap"><a class="brand" href="/">ShowMerit</a>
 <nav><a href="/abhimanyu/">Profile</a><a href="/abhimanyu/articles/">Articles</a></nav></div></header>
 {content}
 <footer><div class="wrap"><span>ShowMerit. Every line links to its proof.</span><span>Free for now.</span></div></footer>
@@ -175,8 +175,12 @@ def home(profile, rows, articles):
     content = f"""<main>
 <section class="hero"><div class="wrap">
 <h1>A profile where every claim links to its <span class="mark">proof</span>.</h1>
-<p>Add your public links and ShowMerit builds your professional profile. Free for now.</p>
-<div class="cta"><a class="button" href="/{profile['slug']}/">See a real profile</a><span class="note">Sign-up isn't open yet.</span></div>
+<p>Type your GitHub username and see your merged work, with proof, in seconds. Free for now.</p>
+<form id="try-form" class="try" autocomplete="off"><label for="try-user">GitHub username</label>
+<div><input id="try-user" name="user" type="text" inputmode="text" autocapitalize="none" spellcheck="false" maxlength="39" placeholder="your-username" required>
+<button class="button" type="submit">See my proof</button></div></form>
+<p class="note">No sign-up. Nothing is saved. Or <a href="/{profile['slug']}/">see a real profile</a>.</p>
+<div id="try-result" aria-live="polite"></div>
 </div></section>
 <section class="block wrap">
 <h2>From the founder's profile</h2>
@@ -186,8 +190,8 @@ def home(profile, rows, articles):
 <section class="block wrap">
 <h2>How it works</h2>
 <ol class="steps">
-<li><b>Add your links</b>Start with GitHub and your published articles.</li>
-<li><b>Your profile builds itself</b>ShowMerit collects your work and keeps it current.</li>
+<li><b>Start with GitHub</b>Your username is enough to see your merged work.</li>
+<li><b>Your profile builds itself</b>Your merged work is grouped by project, with no document to maintain.</li>
 <li><b>Every line keeps its proof</b>Readers can open the source behind any claim.</li>
 </ol>
 </section>
@@ -196,10 +200,11 @@ def home(profile, rows, articles):
 <ul class="ledger" style="margin-top:16px">{''.join(article_row(a) for a in articles[:3])}</ul>
 </section>
 <section class="closing"><div class="wrap"><h2>See how a profile reads.</h2><a class="button" href="/{profile['slug']}/">See a real profile</a></div></section>
-</main>"""
+</main>
+<script src="/try.js" defer></script>"""
     return page("ShowMerit: a profile where every claim links to its proof",
                 "Add your public links and ShowMerit builds your professional profile, with proof behind every line.",
-                "/", content, cobalt_bar=True)
+                "/", content)
 
 
 def profile_page(profile, rows, articles, today):
