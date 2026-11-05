@@ -5,14 +5,19 @@ on:
   workflow_dispatch:
 permissions: { contents: read }
 jobs:
-  codespace:
+  laptop:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash check.sh
+        working-directory: labs/opentelemetry-java-agent-in-splunk-apm-one-env-var-zero-code
+  workspace:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: devcontainers/ci@v0.3
         with:
           push: never
-          runCmd: |
-            for i in $(seq 1 60); do docker info >/dev/null 2>&1 && break; sleep 2; done
-            cd labs/opentelemetry-java-agent-in-splunk-apm-one-env-var-zero-code && bash check.sh
+          runCmd: docker --version && python3 --version && terraform version && aws --version && kubectl version --client
