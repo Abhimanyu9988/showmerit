@@ -358,7 +358,7 @@ def run_box(article):
     clone = f"git clone https://github.com/Abhimanyu9988/showmerit.git\ncd showmerit/{path}"
     options = ""
     if (ROOT / path / "check.sh").is_file():
-        options += (f'<div><h3>On your laptop</h3><p>Runs the app with and without the agent on your own machine and counts what the agent reports. Free, needs Docker, and took about 2 minutes in our test. '
+        options += (f'<div><h3>On your laptop</h3><p>Runs the app with and without the agent on your own machine and counts what the agent reports. Free, needs Docker, jq and Python 3, and took about 2 minutes in our test. '
                     f'It uses no AWS or Splunk.</p><pre><code>{e(clone)}\nbash check.sh</code></pre></div>')
     build = next((m for m in re.findall(r'<h2 id="([^"]+)">', article["body"]) if m.startswith(("build", "how-to-build", "run-it", "reproduce"))), "")
     jump = f'<a href="#{build}">Follow the steps below</a>' if build else "Follow the steps in this article"

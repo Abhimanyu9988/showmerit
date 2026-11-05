@@ -62,7 +62,7 @@ No tracing code, no SQS setting, and the same jar as before. The pods needed the
 
 I built this in a throwaway AWS account and counted it message by message. Below: how the trace crosses the queue, the one setting that changes its shape, and every step.
 
-![Dashboard charted from real lab data: orders, an inferred sqs node and fulfilment on a service map, 400 of 400 messages in one trace, 10 of 10 traces read in Splunk, and the trace ID on a waiting SQS message matching the producer span](/abhimanyu/articles/follow-sqs-messages-through-splunk-apm-with-the-otel-java/cover.png)
+![Dashboard charted from real Splunk series for the lab run: a service map of orders, an inferred Amazon SQS node and fulfilment, 400 of 400 messages in one trace, 10 of 10 traces in Splunk, plus request rate, orders latency and JVM memory graphs](/abhimanyu/articles/follow-sqs-messages-through-splunk-apm-with-the-otel-java/cover.png)
 
 > **TL;DR**
 > - **What you get:** one trace from the HTTP request through SQS to your `@SqsListener` method, and both services on a Splunk APM service map.
@@ -177,7 +177,7 @@ The two trace IDs on each row match. Each order got its own trace and exactly on
 
 Splunk APM agreed. Both services appeared on the map, with `sqs` as an inferred node and a path from `orders` to `fulfilment`.
 
-![Service map of orders, an inferred sqs node and fulfilment, above a chart of requests per 10 seconds showing a burst of 400 orders and a burst of 100 orders, charted from real Splunk series](/abhimanyu/articles/follow-sqs-messages-through-splunk-apm-with-the-otel-java/step-2.png)
+![Service map of orders, an inferred Amazon SQS node and fulfilment, above graphs of requests per 10 seconds, orders latency and JVM memory, charted from real Splunk series](/abhimanyu/articles/follow-sqs-messages-through-splunk-apm-with-the-otel-java/step-2.png)
 
 ## One experimental setting gives each consumer a linked trace
 
