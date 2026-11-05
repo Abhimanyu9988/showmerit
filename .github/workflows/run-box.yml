@@ -13,4 +13,6 @@ jobs:
       - uses: devcontainers/ci@v0.3
         with:
           push: never
-          runCmd: cd labs/opentelemetry-java-agent-in-splunk-apm-one-env-var-zero-code && bash check.sh
+          runCmd: |
+            for i in $(seq 1 60); do docker info >/dev/null 2>&1 && break; sleep 2; done
+            cd labs/opentelemetry-java-agent-in-splunk-apm-one-env-var-zero-code && bash check.sh
