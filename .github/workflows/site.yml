@@ -1,0 +1,34 @@
+name: site
+on:
+  push: { branches: [main] }
+  pull_request:
+  schedule: [{ cron: "23 5 * * *" }]
+  workflow_dispatch:
+permissions: { contents: read }
+concurrency: { group: site, cancel-in-progress: false }
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install -r requirements.txt
+      - name: Refresh pull requests, keeping saved data if GitHub fails
+        if: github.event_name != 'pull_request'
+        run: python tools/refresh.py || true
+        env: { GITHUB_TOKEN: "${{ github.token }}" }
+      - run: python build.py
+      - run: python tools/check.py
+      - uses: actions/upload-pages-artifact@v3
+        if: github.event_name != 'pull_request'
+        with: { path: _site }
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions: { pages: write, id-token: write }
+    environment: { name: github-pages, url: "${{ steps.d.outputs.page_url }}" }
+    steps:
+      - id: d
+        uses: actions/deploy-pages@v4

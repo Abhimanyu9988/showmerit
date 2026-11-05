@@ -1,0 +1,18 @@
+{
+  "slug": "abhimanyu",
+  "name": "Abhimanyu Bajaj",
+  "github": "Abhimanyu9988",
+  "lede": "OpenTelemetry code owner for two Collector components. Writes hands-on AWS container guides, each tested in a lab.",
+  "share_line": "OpenTelemetry code owner",
+  "links": [
+    {"label": "GitHub", "url": "https://github.com/Abhimanyu9988"},
+    {"label": "ORCID", "url": "https://orcid.org/0009-0005-1179-009X"}
+  ],
+  "hide": ["cncf/people#855", "dharam-jakhar/cloudbox#3"],
+  "projects": {
+    "open-telemetry/opentelemetry-collector-contrib": "Collector Contrib",
+    "open-telemetry/semantic-conventions": "Semantic Conventions",
+    "open-telemetry/opentelemetry-helm-charts": "Helm Charts",
+    "Appdynamics/datapower-monitoring-extension": "DataPower Extension"
+  }
+}
