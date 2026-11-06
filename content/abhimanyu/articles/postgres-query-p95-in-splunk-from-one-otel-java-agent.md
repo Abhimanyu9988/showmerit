@@ -37,7 +37,7 @@ linkedin: 'A Postgres latency chart from a Java service usually means someone ad
 
   6,971 lookups counted, 0.8% from what the load sent
 
-  A test statement's mean within 3.3% of pg_stat_statements
+  A test statement''s mean within 3.3% of pg_stat_statements
 
 
   A histogram p95 is a bucket-bounded estimate, so the post shows how to read one.
