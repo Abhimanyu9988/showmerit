@@ -37,7 +37,7 @@ linkedin: 'A Postgres latency chart from a Java service usually means someone ad
 
   6,971 lookups counted, 0.8% from what the load sent
 
-  A per-statement mean within 3.3% of pg_stat_statements
+  A test statement's mean within 3.3% of pg_stat_statements
 
 
   A histogram p95 is a bucket-bounded estimate, so the post shows how to read one.
@@ -61,7 +61,7 @@ linkedin: 'A Postgres latency chart from a Java service usually means someone ad
 
 You open Splunk to see how long your Java services spend in Postgres, and you want that as a chart per statement. The metric for it is `db.client.operation.duration`, and the OpenTelemetry Java agent records it once you opt in.
 
-One setting did it. **`OTEL_SEMCONV_STABILITY_OPT_IN=database` took the metric from 0 series to 14 per statement in Splunk Observability Cloud, on the same jar and image, with no code changes.** `_sum` and `_count` then gave a per-statement mean within 3.3% of what `pg_stat_statements` recorded, and one SignalFlow program reads a p95 from the same metric, as a bucket-bounded estimate.
+One setting did it. **`OTEL_SEMCONV_STABILITY_OPT_IN=database` took the metric from 0 series to 14 per statement in Splunk Observability Cloud, on the same jar and image, with no code changes.** For a test statement with a known sleep, `_sum` and `_count` then gave a mean within 3.3% of what `pg_stat_statements` recorded, and one SignalFlow program reads a p95 from the same metric, as a bucket-bounded estimate.
 
 The run also showed something the docs don't: on EKS with chart defaults, each bucket series uses exactly 36 dimensions, the number Splunk holds per series. That gives you a number to budget your own attributes against.
 
