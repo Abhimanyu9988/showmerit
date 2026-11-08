@@ -125,6 +125,9 @@ def load_goals(profile, badges):
 
 def page(title, description, path, content, image="/share.png", kind="website", schema=None):
     canonical = SITE + path
+    file = ROOT / "static" / image.lstrip("/")
+    if file.is_file():                    # LinkedIn keeps an image by its address, so a new picture needs a new address
+        image += "?v=" + __import__("hashlib").sha1(file.read_bytes()).hexdigest()[:8]
     data = ""
     if schema:
         text = json.dumps(schema, ensure_ascii=False).replace("<", "\\u003c")
