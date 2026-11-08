@@ -32,7 +32,7 @@ for page in pages:
         problems.append(f"{name}: old site link {url}")
     for block in re.findall(r'<script type="application/ld\+json">(.*?)</script>', text, re.S):
         json.loads(block)
-    image = re.search(r'og:image" content="https://showmerit\.com([^"]+)"', text)
+    image = re.search(r'og:image" content="https://showmerit\.com([^"?]+)', text)
     if image:
         file = SITE / image.group(1).lstrip("/")
         if not file.is_file():
