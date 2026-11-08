@@ -123,8 +123,10 @@ def load_goals(profile, badges):
     return sorted(shown, key=lambda g: g["done"] / g["total"], reverse=True), [g for g in goals if g["earned"]]
 
 
-def page(title, description, path, content, image="/share.png", kind="website", schema=None):
+def page(title, description, path, content, image="/share.png", kind="website", schema=None, author=None, published=None):
     canonical = SITE + path
+    extra = (f'\n<meta name="author" content="{e(author)}">' if author else "") + \
+            (f'<meta property="article:published_time" content="{e(published)}"><meta property="article:author" content="{e(author)}">' if published else "")
     file = ROOT / "static" / image.lstrip("/")
     if file.is_file():                    # LinkedIn keeps an image by its address, so a new picture needs a new address
         image += "?v=" + __import__("hashlib").sha1(file.read_bytes()).hexdigest()[:8]
@@ -142,7 +144,7 @@ def page(title, description, path, content, image="/share.png", kind="website", 
 {data}<meta property="og:type" content="{kind}"><meta property="og:site_name" content="ShowMerit">
 <meta property="og:title" content="{e(title)}"><meta property="og:description" content="{e(description)}">
 <meta property="og:url" content="{canonical}"><meta property="og:image" content="{SITE}{image}">
-<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">{extra}
 <meta name="twitter:card" content="summary_large_image">
 <script>if (location.protocol === "http:" && location.hostname.endsWith("showmerit.com")) location.replace("https://showmerit.com" + location.pathname + location.search + location.hash);</script>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -342,7 +344,7 @@ def profile_page(profile, rows, articles, today, badges, goals, earned):
 <section class="group wrap"><h2>Articles ({len(articles)})</h2>
 <ul class="ledger">{''.join(article_row(a) for a in articles)}</ul></section>
 </main>"""
-    return page(f"{profile['name']} on ShowMerit", profile["lede"], f"/{profile['slug']}/", content,
+    return page(f"{profile['name']} on ShowMerit", profile["lede"], f"/{profile['slug']}/", content, author=profile["name"],
                 image=f"/{profile['slug']}/share.png", kind="profile", schema=person(profile))
 
 
@@ -391,7 +393,8 @@ def article_page(profile, article, others):
               "description": article["description"], "datePublished": article["date"], "image": SITE + article["share"],
               "url": SITE + article["url"], "mainEntityOfPage": SITE + article["url"], "author": person(profile),
               "keywords": ", ".join(article.get("tags", []))}
-    return page(article["title"], article["description"], article["url"], content, image=article["share"], kind="article", schema=schema)
+    return page(article["title"], article["description"], article["url"], content, image=article["share"], kind="article", schema=schema,
+                author=profile["name"], published=article["date"])
 
 
 def write(path, text):
