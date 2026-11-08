@@ -19,14 +19,14 @@ def card(title, name, line, date, address):
 @font-face {{ font-family: D; src: url({FONTS}/big-shoulders-display-latin-800-normal.woff2); font-weight: 800; }}
 @font-face {{ font-family: M; src: url({FONTS}/ibm-plex-mono-latin-500-normal.woff2); }}
 * {{ box-sizing: border-box; }}
-body {{ margin: 0; width: 1200px; height: 630px; background: #1a3fd0; color: #fff; display: grid; grid-template-columns: 1fr 340px; }}
-.left {{ padding: 54px 44px 44px 60px; display: flex; flex-direction: column; justify-content: space-between; min-width: 0; }}
+body {{ margin: 0; width: 1200px; height: 630px; background: #fff; color: #0b1b3f; display: grid; grid-template-columns: 1fr 340px; border-top: 14px solid #1a3fd0; }}
+.left {{ padding: 46px 44px 44px 60px; display: flex; flex-direction: column; justify-content: space-between; min-width: 0; }}
 h1 {{ font: 800 {size}px/1 D; margin: 0; text-wrap: balance; }}
-.brand {{ font: 800 40px/1 D; }}
-.stub {{ background: #e6f05a; color: #0b1b3f; border-left: 8px dotted #1a3fd0; padding: 54px 34px 44px; display: flex; flex-direction: column; justify-content: space-between; font: 500 25px/1.3 M; }}
-.stub b {{ font: 800 58px/1 D; display: block; margin-bottom: 18px; }}
-.stub div {{ margin-bottom: 8px; }}
-.addr {{ font-size: 18px; white-space: nowrap; }}
+.brand {{ font: 800 40px/1 D; color: #1a3fd0; }}
+.stub {{ background: #eef2fc; color: #0b1b3f; border-left: 2px solid #c9d3ea; padding: 46px 34px 44px; display: flex; flex-direction: column; justify-content: space-between; font: 500 25px/1.3 M; }}
+.stub b {{ font: 800 58px/1 D; display: block; margin-bottom: 18px; color: #0b1b3f; }}
+.stub div {{ margin-bottom: 8px; color: #4a5678; }}
+.addr {{ font-size: 18px; white-space: nowrap; color: #1a3fd0 !important; }}
 </style><div class="left"><h1>{html.escape(title)}</h1><div class="brand">ShowMerit</div></div>
 <div class="stub"><div><b>{html.escape(name)}</b>{rows}</div><div class="addr">{html.escape(address)}</div></div>"""
 
