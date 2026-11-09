@@ -32,6 +32,9 @@ for page in pages:
         problems.append(f"{name}: old site link {url}")
     for block in re.findall(r'<script type="application/ld\+json">(.*?)</script>', text, re.S):
         json.loads(block)
+    for line in re.findall(r'<p class="recheck[^"]*">(.*?)</p>', text, re.S):   # a recheck claim needs its run as proof
+        if not re.fullmatch(r'<a href="https://github\.com/Abhimanyu9988/Abhimanyu9988\.github\.io/actions/runs/\d+">[^<]+</a>', line):
+            problems.append(f"{name}: recheck line without its run link")
     image = re.search(r'og:image" content="https://showmerit\.com([^"?]+)', text)
     if image:
         file = SITE / image.group(1).lstrip("/")

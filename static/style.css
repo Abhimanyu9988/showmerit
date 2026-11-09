@@ -123,6 +123,10 @@ a.stamp.done:hover { background: var(--ink); border-color: var(--ink); }
 .head .wrap { padding-block: 30px 34px; display: grid; grid-template-columns: minmax(0, 1fr) 268px; gap: 28px; align-items: end; }
 .head h1 { font-size: clamp(44px, 7.6vw, 80px); }
 .head .desc { margin: 12px 0 0; color: var(--muted); font-size: 19px; max-width: 36em; }
+.head .recheck { margin: 12px 0 0; font: 400 14px/1.45 var(--mono); max-width: 46em; }
+.head .recheck a { color: var(--ink); text-underline-offset: 3px; }
+.head .recheck::before { content: "\2713  "; color: var(--accent); }
+.head .recheck.failed::before { content: "!  "; color: var(--ink); background: var(--highlight); padding: 0 2px; margin-right: 6px; }
 .ticket { background: var(--stub); color: var(--ink); border-left: 3px dotted var(--muted); padding: 12px 14px; display: grid; gap: 5px; font: 400 14px/1.4 var(--mono); }
 .ticket b { font-weight: 500; }
 .prose { padding-block: 28px 12px; overflow-wrap: anywhere; }
