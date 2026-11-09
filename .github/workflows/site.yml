@@ -14,12 +14,13 @@ jobs:
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
       - run: pip install -r requirements.txt
-      - name: Refresh pull requests, keeping saved data if GitHub fails
+      - name: Refresh pull requests, badges and lab rechecks, keeping saved data if a source fails
         run: python tools/refresh.py
         env: { GITHUB_TOKEN: "${{ github.token }}" }
       - run: python build.py
       - run: python tools/check.py
       - run: python tests/test_dns_setup.py
+      - run: python tests/test_rechecks.py
       - uses: actions/upload-pages-artifact@v3
         if: github.event_name != 'pull_request'
         with: { path: _site }

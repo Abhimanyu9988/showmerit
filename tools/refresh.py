@@ -55,7 +55,12 @@ def credly():
         print(f"  {row['issued']} {row['expires']} {row['name']}")
 
 
-for source in (github, credly):
+def rechecks():
+    import rechecks as found          # the lab recheck results, from the pipeline repo's public analytics branch
+    found.refresh()
+
+
+for source in (github, credly, rechecks):
     try:
         source()
     except (OSError, ValueError, KeyError) as error:

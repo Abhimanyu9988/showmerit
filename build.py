@@ -90,6 +90,65 @@ def load_articles(profile):
     return sorted(articles, key=lambda a: a["date"], reverse=True)
 
 
+def load_rechecks():
+    """Lab recheck results, refreshed by tools/rechecks.py. A missing or broken file shows no lines."""
+    try:
+        return json.loads((ROOT / "data/rechecks.json").read_text()).get("articles") or {}
+    except (OSError, ValueError, AttributeError):
+        return {}
+
+
+def headline(versions):
+    """The versions a reader cares about: the agent and charts, or the images when the lab pins nothing else."""
+    main = {k: v for k, v in versions.items() if k == "agent" or k.endswith(" chart")}
+    return main or dict(list(versions.items())[:2])
+
+
+def version_text(*sets):
+    """'agent 2.33.1 and 2.34.0, keda chart 2.21.0' for one or two version sets."""
+    keys = list(dict.fromkeys(k for vs in sets for k in headline(vs)))
+    parts = []
+    for k in keys:
+        seen = list(dict.fromkeys(vs[k] for vs in sets if k in vs))
+        parts.append(f"{k} {' and '.join(seen)}")
+    return ", ".join(parts) or "the lab as published"
+
+
+def recheck_line(record):
+    """One line with the latest recheck, linked to its run: (text, run, failed), or None when there is none yet."""
+    free = record.get("free") if (record.get("free") or {}).get("results") else None
+    aws = record.get("aws")
+    if not free and not aws:
+        return None
+    if aws and (not free or aws["date"] >= free["date"]):
+        day = full(aws["date"])
+        if aws["passed"]:
+            return f"Rechecked {day}: works with {version_text(aws['versions'])} (on AWS)", aws["run"], False
+        return f"Recheck on {day} failed with {version_text(aws['versions'])}, investigating (on AWS)", aws["run"], True
+    day = full(free["date"])
+    sets = {r["set"]: r for r in free["results"]}
+    article, newest = sets.get("article"), sets.get("newest")
+    where = " (on a GitHub runner)"
+    if all(r["passed"] for r in free["results"]):
+        if newest:
+            return f"Rechecked {day}: works with {version_text(article['versions'], newest['versions'])}{where}", free["run"], False
+        tail = ", still the newest" if free.get("newest_is_article") else ""
+        return f"Rechecked {day}: works with {version_text(article['versions'])}{tail}{where}", free["run"], False
+    if article and article["passed"]:
+        return (f"Recheck on {day}: works with {version_text(article['versions'])}; failed with "
+                f"{version_text(newest['versions'])}, investigating{where}"), free["run"], True
+    failed = [r["versions"] for r in free["results"] if not r["passed"]]
+    return f"Recheck on {day} failed with {version_text(*failed)}, investigating{where}", free["run"], True
+
+
+def recheck_html(record):
+    line = recheck_line(record or {})
+    if not line:
+        return ""
+    text, run, failed = line
+    return f'<p class="recheck{" failed" if failed else ""}"><a href="{e(run)}">{e(text)}</a></p>'
+
+
 def load_badges():
     return json.loads((ROOT / "data/credly.json").read_text())
 
@@ -373,7 +432,7 @@ def run_box(article):
     return f'<section class="run wrap" aria-labelledby="run-title"><h2 id="run-title">Run this yourself</h2><div class="options">{options}</div></section>'
 
 
-def article_page(profile, article, others):
+def article_page(profile, article, others, rechecks=None):
     ticket = [f'<b><a href="/{profile["slug"]}/">{e(profile["name"])}</a></b>', f'<span>Published {full(article["date"])}</span>',
               f'<span>{article["minutes"]} min read</span>']
     if article.get("region"):
@@ -383,7 +442,7 @@ def article_page(profile, article, others):
     if article.get("evidence_url"):
         ticket.append(f'<a href="{e(article["evidence_url"])}">Lab evidence</a>')
     content = f"""<main><section class="head"><div class="wrap">
-<div><h1>{e(article['title'])}</h1><p class="desc">{e(article['description'])}</p></div>
+<div><h1>{e(article['title'])}</h1><p class="desc">{e(article['description'])}</p>{recheck_html((rechecks or {}).get(article['slug']))}</div>
 <div class="ticket">{''.join(ticket)}</div></div></section>
 {run_box(article)}
 <article class="prose wrap">{article['body']}</article>
@@ -421,6 +480,7 @@ def main():
     today = datetime.date.today()
     rows = load_contributions(profile)
     articles = load_articles(profile)
+    rechecks = load_rechecks()
     shutil.rmtree(OUT, ignore_errors=True)
     shutil.copytree(ROOT / "static", OUT)
     slug = profile["slug"]
@@ -431,7 +491,7 @@ def main():
     write(f"/{slug}/", profile_page(profile, rows, articles, today, badges, goals, earned))
     write(f"/{slug}/articles/", articles_page(profile, articles))
     for i, article in enumerate(articles):
-        write(article["url"], article_page(profile, article, articles[(i + 1) % len(articles):] + articles))
+        write(article["url"], article_page(profile, article, articles[(i + 1) % len(articles):] + articles, rechecks))
         source = frontmatter.load(ROOT / "content" / slug / "articles" / f"{article['slug']}.md")
         write(article["url"] + "article.md", f"# {article['title']}\n\n{article['description']}\n\nBy {profile['name']}. "
               f"Published {article['date']}. Page: {SITE}{article['url']}\n\n{source.content}")
