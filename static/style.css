@@ -130,7 +130,7 @@ a.stamp.done:hover { background: var(--ink); border-color: var(--ink); }
 .ticket { background: var(--stub); color: var(--ink); border-left: 3px dotted var(--muted); padding: 12px 14px; display: grid; gap: 5px; font: 400 14px/1.4 var(--mono); }
 .ticket b { font-weight: 500; }
 .prose { padding-block: 28px 12px; overflow-wrap: anywhere; }
-.prose > *, .next > * { max-width: 680px; }
+.prose > *, .next > * { max-width: 100%; }
 .prose h2 { margin: 1.5em 0 .35em; font-size: 34px; }
 .prose h3 { font-size: 21px; margin: 1.4em 0 .3em; line-height: 1.25; }
 .prose a { color: var(--accent); }
