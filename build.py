@@ -196,6 +196,7 @@ def page(title, description, path, content, image="/share.png", kind="website", 
     return f"""<!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="google-site-verification" content="fKPAsVH1s4Ios4jSC3C3rjl4uSPWU-tZEZHsxFx9g4M">
 <title>{e(title)}</title>
 <meta name="description" content="{e(description)}">
 <link rel="canonical" href="{canonical}">
