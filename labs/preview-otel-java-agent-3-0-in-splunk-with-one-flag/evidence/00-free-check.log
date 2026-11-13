@@ -1,0 +1,137 @@
+# The free check (check.sh) from lab-check run 43325767525, app job, 12 Nov 2026. GitHub runner with Docker, console exporters, no Splunk.
+== Fetching the agent and building the jar
+Unable to find image 'python:3.12-slim' locally
+3.12-slim: Pulling from library/python
+05e0eee5572e: Pulling fs layer
+68bced9e0afa: Pulling fs layer
+2dc99d2d0a39: Pulling fs layer
+37fb86c2a767: Pulling fs layer
+05e0eee5572e: Download complete
+68bced9e0afa: Download complete
+2dc99d2d0a39: Download complete
+37fb86c2a767: Download complete
+e0a5f9afcd02: Download complete
+f26199dfe4a6: Download complete
+37fb86c2a767: Pull complete
+68bced9e0afa: Pull complete
+2dc99d2d0a39: Pull complete
+05e0eee5572e: Pull complete
+Digest: sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b
+Status: Downloaded newer image for python:3.12-slim
+Unable to find image 'maven:3.9.9-eclipse-temurin-21' locally
+3.9.9-eclipse-temurin-21: Pulling from library/maven
+ac08ec036c80: Pulling fs layer
+380ab39b4f9f: Pulling fs layer
+52fd01a09145: Pulling fs layer
+903243de14d5: Pulling fs layer
+14ea0157e6cf: Pulling fs layer
+d9d352c11bbd: Pulling fs layer
+fdf9441e6ddd: Pulling fs layer
+100a2f749ec8: Pulling fs layer
+99f05f209f6f: Pulling fs layer
+4f4fb700ef54: Pulling fs layer
+4f4fb700ef54: Already exists
+ae3a78c3e86b: Download complete
+009867547fc9: Download complete
+ac08ec036c80: Download complete
+14ea0157e6cf: Download complete
+100a2f749ec8: Download complete
+99f05f209f6f: Download complete
+903243de14d5: Download complete
+d9d352c11bbd: Download complete
+380ab39b4f9f: Download complete
+52fd01a09145: Download complete
+fdf9441e6ddd: Download complete
+d9d352c11bbd: Pull complete
+380ab39b4f9f: Pull complete
+fdf9441e6ddd: Pull complete
+14ea0157e6cf: Pull complete
+99f05f209f6f: Pull complete
+903243de14d5: Pull complete
+52fd01a09145: Pull complete
+4f4fb700ef54: Pull complete
+ac08ec036c80: Pull complete
+100a2f749ec8: Pull complete
+Digest: sha256:3a4ab3276a087bf276f79cae96b1af04f53731bec53fb2e651aca79e4b10211e
+Status: Downloaded newer image for maven:3.9.9-eclipse-temurin-21
+total 48608
+-rw-r--r-- 1 root root 23263811 Nov 12 23:05 app.jar
+-rw-r--r-- 1 root root 26507624 Nov 12 23:05 opentelemetry-javaagent.jar
+Unable to find image 'postgres:16.4-alpine' locally
+16.4-alpine: Pulling from library/postgres
+da9db072f522: Pulling fs layer
+500aaa681781: Pulling fs layer
+754dcd3183db: Pulling fs layer
+7c35d0b2112f: Pulling fs layer
+b6fcda863f21: Pulling fs layer
+09852ea151b6: Pulling fs layer
+3c23ffc3610d: Pulling fs layer
+d68e4f14dc32: Pulling fs layer
+6886cb0fa181: Pulling fs layer
+5b2b0e42c692: Pulling fs layer
+4f90fd4705e0: Pulling fs layer
+da9db072f522: Download complete
+4f90fd4705e0: Download complete
+7c35d0b2112f: Download complete
+09852ea151b6: Download complete
+3c23ffc3610d: Download complete
+500aaa681781: Download complete
+754dcd3183db: Download complete
+b6fcda863f21: Download complete
+6886cb0fa181: Download complete
+5b2b0e42c692: Download complete
+8c562a277ca2: Download complete
+da9db072f522: Pull complete
+b08f8b45cd60: Download complete
+d68e4f14dc32: Download complete
+4f90fd4705e0: Pull complete
+7c35d0b2112f: Pull complete
+3c23ffc3610d: Pull complete
+6886cb0fa181: Pull complete
+09852ea151b6: Pull complete
+500aaa681781: Pull complete
+754dcd3183db: Pull complete
+b6fcda863f21: Pull complete
+5b2b0e42c692: Pull complete
+d68e4f14dc32: Pull complete
+Digest: sha256:5660c2cbfea50c7a9127d17dc4e48543eedd3d7a41a595a2dfa572471e37e64c
+Status: Downloaded newer image for postgres:16.4-alpine
+== The agent with its defaults
+inventory process running for 12.282
+orders process running for 12.492
+LOAD target=orders started_epoch=1794524762
+LOAD minute=1794524760 sent=364
+LOAD requests=299 errors=0 p50_ms=8.00 p95_ms=40.25
+LOAD last_trace_id=533f4fbc41c41cead6390b8085e81b56
+-- default run: database metric names
+  db.client.connections.create_time
+  db.client.connections.idle.min
+  db.client.connections.max
+  db.client.connections.pending_requests
+  db.client.connections.usage
+  db.client.connections.use_time
+  db.client.connections.wait_time
+-- default run: database span keys: db.connection_string db.name db.operation db.sql.table db.statement db.system db.user 
+[otel.javaagent 2026-11-12 23:05:49:852 +0000] [main] INFO io.opentelemetry.javaagent.tooling.VersionLogger - opentelemetry-javaagent - version: 2.33.1
+== The same agent options, with OTEL_INSTRUMENTATION_COMMON_V3_PREVIEW=true
+inventory process running for 14.058
+orders process running for 13.414
+LOAD target=orders started_epoch=1794524806
+LOAD minute=1794524760 sent=228
+LOAD minute=1794524820 sent=132
+LOAD requests=300 errors=0 p50_ms=8.36 p95_ms=40.41
+LOAD last_trace_id=3109f51d4c48e3590dccfc5e496115d9
+-- preview run: database metric names
+  db.client.connection.count
+  db.client.connection.create_time
+  db.client.connection.idle.min
+  db.client.connection.limit
+  db.client.connection.pending_requests
+  db.client.connection.use_time
+  db.client.connection.wait_time
+  db.client.operation.duration
+-- preview run: database span keys: db.namespace db.query.summary db.query.text db.system.name 
+pool names: default old 7 new 0, preview old 0 new 7
+use_time unit: default ms, preview s
+span keys: default [db.connection_string db.name db.operation db.sql.table db.statement db.system db.user ] preview [db.namespace db.query.summary db.query.text db.system.name ]
+CHECK PASSED
