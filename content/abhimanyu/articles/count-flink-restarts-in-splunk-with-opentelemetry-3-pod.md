@@ -41,9 +41,11 @@ linkedin: 'Your Flink job says RUNNING. Your pods look healthy.
   https://showmerit.com/abhimanyu/articles/count-flink-restarts-in-splunk-with-opentelemetry-3-pod/
 
 
-  Next, I''m proposing a restart-time metric for the OpenTelemetry Flink receiver.
+  I''ve proposed a restart-time metric for the OpenTelemetry Flink receiver:
 
-  Want to build it? Comment and I''ll help you get started.
+  https://github.com/open-telemetry/opentelemetry-collector-contrib/issues/53170
+
+  Want to build it? Comment there and I''ll help you get started.
 
 
   #ApacheFlink #OpenTelemetry #Splunk #Kubernetes'
@@ -184,7 +186,7 @@ Flink can report how long a job has spent in each state in total. Its [metrics p
 metrics.job.status.enable: [CURRENT_TIME, TOTAL_TIME]
 ```
 
-In this run, the only `flink.job.*` metrics the receiver sent were the checkpoint count, checkpoints in progress, the last checkpoint's size and time, and the restart count: no time spent restarting. A total like that would keep a 5-second outage even with a 10-second scrape. I'm opening an issue to add it as an optional metric; if you'd like to build it, I'm happy to help you get started.
+In this run, the only `flink.job.*` metrics the receiver sent were the checkpoint count, checkpoints in progress, the last checkpoint's size and time, and the restart count: no time spent restarting. A total like that would keep a 5-second outage even with a 10-second scrape. I opened [issue #53170](https://github.com/open-telemetry/opentelemetry-collector-contrib/issues/53170) to add it as an optional metric. If you'd like to build it, comment there and I'll help you get started.
 
 ## Clean up (the cluster costs money while it runs)
 
