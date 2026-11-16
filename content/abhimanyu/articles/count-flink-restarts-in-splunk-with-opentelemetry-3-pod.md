@@ -2,7 +2,8 @@
 title: 'Count Flink Restarts in Splunk With OpenTelemetry: 3 Pod Deletions, 7 Restarts'
 description: I deleted a Flink TaskManager pod 5 times on EKS. In the first 2, job state blinked for 5 s and Splunk's Kubernetes
   metrics didn't move. Then 3 deletions made 7 Flink restarts, and the OpenTelemetry Flink receiver put exactly 7 in Splunk.
-date: '2026-11-18'
+date: '2026-11-16'
+linkedin_date: '2026-11-17'
 author: Abhimanyu Bajaj
 tags:
 - kubernetes
@@ -20,7 +21,7 @@ linkedin: 'Your Flink job says RUNNING. Your pods look healthy.
 
   I deleted a TaskManager pod 5 times on EKS:
 
-  → Job state: RESTARTING for about 5 s, then RUNNING again
+  → Job state, first 2 deletions: RESTARTING for about 5 s, then RUNNING again
 
   → Kubernetes metrics in Splunk, first 2 deletions: available 1, container restarts 0
 
@@ -40,7 +41,9 @@ linkedin: 'Your Flink job says RUNNING. Your pods look healthy.
   https://showmerit.com/abhimanyu/articles/count-flink-restarts-in-splunk-with-opentelemetry-3-pod/
 
 
-  How do you alert on Flink restarts today?
+  Next, I''m proposing a restart-time metric for the OpenTelemetry Flink receiver.
+
+  Want to build it? Comment and I''ll help you get started.
 
 
   #ApacheFlink #OpenTelemetry #Splunk #Kubernetes'
@@ -70,7 +73,7 @@ I'm a code owner of the OpenTelemetry Flink metrics receiver, so I wanted number
 - **The job:** Flink's StateMachine example at parallelism 2, checkpoints every 5 s, fixed-delay restarts with a 5 s delay.
 - **Splunk OTel Collector chart 0.163.1** on the cluster, which sends the Kubernetes metrics.
 - **A watcher** on the other node read Flink's REST API once a second: job state, tasks running, `numRestarts`, checkpoint counts, plus Flink's own state-change timestamps.
-- **Deleting the TaskManager pod** stands in for a node drain, an eviction or an out-of-memory kill.
+- **Deleting the TaskManager pod** stands in for losing a TaskManager pod, as in a node drain or an eviction. I didn't test out-of-memory kills or containers restarting in place.
 
 Phase 1 had no Flink receiver and two deletions 45 s apart. Phase 2 added the receiver and three deletions 49 to 54 s apart (the lab waits for RUNNING, then 30 s).
 
@@ -89,9 +92,7 @@ Two deletions, 45 seconds apart:
 
 `k8s.container.restarts` stayed at 0 too. Splunk held a series for 3 TaskManager pods: the original and two replacements, each with 0 restarts. A deleted pod is replaced, so the restart count of a container never moves.
 
-![Splunk chart of k8s.deployment.available for flink-taskmanager with rollup min, across both phases of the lab](/abhimanyu/articles/count-flink-restarts-in-splunk-with-opentelemetry-3-pod/step-1.png)
-
-The lab measured the phase-1 points only; the chart spans both phases.
+![Splunk chart of k8s.deployment.available for flink-taskmanager with rollup min, from my Splunk org](/abhimanyu/articles/count-flink-restarts-in-splunk-with-opentelemetry-3-pod/step-1.png)
 
 ## Phase 2: the receiver in Splunk
 
@@ -175,6 +176,16 @@ Run `./fix.sh`. It starts the contrib Collector with the Flink receiver, deletes
 
 To alert on it, a detector on the increase of `flink.job.restart.count` per job over a few minutes catches restarts that job state and pod health don't show.
 
+## Help build it
+
+Flink can report how long a job has spent in each state in total. Its [metrics page](https://nightlies.apache.org/flink/flink-docs-release-1.20/docs/ops/metrics/) lists `<jobStatus>TimeTotal`, in milliseconds (so `restartingTimeTotal` for RESTARTING), and says whether these metrics are reported depends on the `metrics.job.status.enable` setting, for example:
+
+```yaml
+metrics.job.status.enable: [CURRENT_TIME, TOTAL_TIME]
+```
+
+In this run, the only `flink.job.*` metrics the receiver sent were the checkpoint count, checkpoints in progress, the last checkpoint's size and time, and the restart count: no time spent restarting. A total like that would keep a 5-second outage even with a 10-second scrape. I'm opening an issue to add it as an optional metric; if you'd like to build it, I'm happy to help you get started.
+
 ## Clean up (the cluster costs money while it runs)
 
 ```bash
@@ -184,7 +195,7 @@ terraform destroy -auto-approve
 
 ## What I didn't test
 
-- **Why some deletions counted more than one restart.** The first phase counted one per deletion and the second phase two or three; the deletions were also closer together. I recorded the counts, not the cause.
+- **Why some deletions counted more than one restart.** The first phase counted one per deletion and the second phase two or three, with the receiver running and the deletions 49 to 54 s apart instead of 45 s. I recorded the counts, not the cause.
 - **Total time not RUNNING per deletion** when it counted several restarts. I measured the first RESTARTING stretch and the RESTARTING samples per phase.
 - **Other failures:** a crashing job, a lost JobManager, or a node failure. Only TaskManager pod deletions.
 - **Scale.** One job, one TaskManager with 2 slots, one restart strategy, and a 10 s collection interval.
@@ -195,6 +206,7 @@ terraform destroy -auto-approve
 - [Deep dive into the Amazon Managed Service for Apache Flink application lifecycle (part 2)](https://aws.amazon.com/blogs/big-data/part-2-deep-dive-into-the-amazon-managed-service-for-apache-fink-application-lifecycle)
 - [FLINK-34907: jobRunningTs should be the timestamp that all tasks are running](https://issues.apache.org/jira/browse/FLINK-34907)
 - [FLINK-23807: use numRestarts to detect restarts in tests](https://issues.apache.org/jira/browse/FLINK-23807)
+- [Flink 1.20 metrics: job status metrics](https://nightlies.apache.org/flink/flink-docs-release-1.20/docs/ops/metrics/)
 - [Flink metrics receiver (OpenTelemetry Collector contrib)](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/flinkmetricsreceiver)
 
 Disclosure: I work at Splunk, part of Cisco, and I'm a code owner of the OpenTelemetry Flink metrics receiver. This is my personal writing; the post isn't sponsored or reviewed by my employer.

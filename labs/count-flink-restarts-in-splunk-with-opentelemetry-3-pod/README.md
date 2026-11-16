@@ -47,3 +47,14 @@ service:
       processors: [resource, batch]
       exporters: [otlphttp]
 ```
+
+## Context from outside the lab (with sources)
+
+- Code owner: upstream `.github/CODEOWNERS` lists
+  `receiver/flinkmetricsreceiver/ @open-telemetry/collector-contrib-approvers @Abhimanyu9988`, and the receiver's
+  `metadata.yaml` has `codeowners: active: [Abhimanyu9988]`
+  (https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/.github/CODEOWNERS).
+- Flink 1.20 metrics page (https://nightlies.apache.org/flink/flink-docs-release-1.20/docs/ops/metrics/), job status
+  metrics: "Whether these metrics are reported depends on the metrics.job.status.enable setting." `<jobStatus>TimeTotal`
+  returns "how much time (in milliseconds) the job has spent in that state in total."
+- The author works at Splunk, part of Cisco; the lab and article are personal work, not sponsored or reviewed by the employer.
