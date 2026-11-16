@@ -66,7 +66,7 @@ Splunk Observability Cloud showed it the same way, straight from the OpenTelemet
 
 ## Why this, this week
 
-Last week's [Microsoft 365 outage](https://techcrunch.com/2026/11/13/microsoft-latest-email-outage-turned-into-a-full-blown-global-cloud-crisis) put recovery under load in the news. Microsoft hasn't published a root cause, and nothing here says what happened inside it. What it's a good reminder of is a pattern the [AWS Builders' Library](https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/) and the [Google SRE book](https://sre.google/sre-book/addressing-cascading-failures/) describe: retries can keep a service overloaded after the thing that broke it has gone. I wanted to see it with numbers, on Kubernetes, and see what it looks like in Splunk.
+Recovery under load is the part of an incident that's easy to get wrong. I wanted to see, with numbers on Kubernetes, how retries alone can keep a service down after its dependency is healthy again, and what that looks like in Splunk. For background on timeouts, retries, backoff and cascading failures, see the [AWS Builders' Library](https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/) and the [Google SRE book](https://sre.google/sre-book/addressing-cascading-failures/).
 
 ## The setup
 
@@ -130,7 +130,7 @@ And the orders requests and 503s per 10 seconds, read back from Splunk:
 | naive-2 | 1513 | 1515 | 2400 | 1513 (100.0%) |
 | budget-2 | 2422 | 2400 | 2400 | 1142 (47.2%) |
 
-Splunk's orders counts were within 0.9% of what orders itself logged as finished. In the instant-retry run, orders finished fewer requests than the load sent: it was busy too, at 0.80 to 0.83 cores on average for one Python process, so the retries cost the caller as well as the dependency. Inventory's per-10-second counts in Splunk came out 12-19% lower than inventory's own log for the same windows; I haven't tracked down where that gap comes from, so inventory's numbers here come from its log.
+Splunk's orders counts were within 0.9% of what orders itself logged as finished. In the instant-retry run, orders finished fewer requests than the load sent: it was busy too, at 0.80 to 0.83 cores on average, so the retries cost the caller as well as the dependency. Inventory's per-10-second counts in Splunk came out 12-20% lower than inventory's own log for the same windows; I haven't tracked down where that gap comes from, so inventory's numbers here come from its log.
 
 What to look for in Splunk if this happens to you: calls per request from the caller to the dependency stuck near its retry maximum, the dependency's request rate at its ceiling and the caller's error rate at 100%, after whatever slowed it down is gone. A chart of client calls divided by server requests is worth keeping on the caller's dashboard.
 
@@ -159,7 +159,7 @@ time.sleep(random.uniform(0, min(2.0, 0.1 * 2 ** attempt)))   # full jitter
 
 - **Some orders fail without a retry** while the budget is spent: 777 to 1086 skipped retries per run here. That's the point, but it's a visible cost.
 - **Latency while the backlog drains:** p50 of successful orders stayed at 44 ms, but p99 rose to 268 to 321 ms, against 57 to 61 ms before the slowdown.
-- **The backlog itself:** inventory still worked on abandoned requests for a while. Server-side load shedding (dropping requests whose deadline has passed) would help with that, and I didn't test it here.
+- **The backlog itself:** inventory still worked on abandoned requests for a while. Server-side load shedding (dropping requests whose deadline has passed) might help with that; I didn't test it here.
 - **The fix is a combination:** I didn't measure backoff, jitter and the budget separately, so this shows the three together, not which one did the work.
 
 ## What I didn't test
@@ -172,7 +172,6 @@ time.sleep(random.uniform(0, min(2.0, 0.1 * 2 ** attempt)))   # full jitter
 
 - [Timeouts, retries, and backoff with jitter (AWS Builders' Library)](https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/)
 - [Addressing Cascading Failures (Google SRE book)](https://sre.google/sre-book/addressing-cascading-failures/)
-- [Microsoft's latest email outage turned into a full-blown global cloud crisis (TechCrunch)](https://techcrunch.com/2026/11/13/microsoft-latest-email-outage-turned-into-a-full-blown-global-cloud-crisis)
 
 Disclosure: I work at Splunk, part of Cisco, and contribute to OpenTelemetry. This is my personal writing; the post isn't sponsored or reviewed by my employer.
 
