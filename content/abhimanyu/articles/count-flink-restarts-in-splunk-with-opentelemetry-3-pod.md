@@ -32,7 +32,7 @@ linkedin: 'Your Flink job says RUNNING. Your pods look healthy.
   Each restart was in a Splunk point 17 to 21 s later.
 
 
-  The receiver isn''t in the Splunk distribution, so I ran the contrib Collector next to it. The config is 20 lines.
+  I ran the upstream contrib Collector next to the Splunk agent for it. The whole config is in the post.
 
 
   Every step and the raw output:
@@ -60,7 +60,7 @@ Flink's own restart counter told a different story. In the second phase, **3 pod
 
 ## Why restarts, not job state
 
-A Flink job with a restart strategy heals itself: lose a TaskManager and it goes RESTARTING, then RUNNING again. Flink's [monitoring guide](https://flink.apache.org/2019/02/21/monitoring-apache-flink-applications-101/) lists restarts and checkpoints among the first metrics to watch, and the [AWS Managed Flink lifecycle post](https://aws.amazon.com/blogs/big-data/part-2-deep-dive-into-the-amazon-managed-service-for-apache-fink-application-lifecycle) describes an application that reports RUNNING while its job keeps failing and restarting. Flink's own test suite detects restarts with `numRestarts` ([FLINK-23807](https://issues.apache.org/jira/browse/FLINK-23807)), and [FLINK-34907](https://issues.apache.org/jira/browse/FLINK-34907) notes that a job is marked RUNNING when scheduling starts, before every task runs.
+A Flink job with a restart strategy heals itself: lose a TaskManager and it goes RESTARTING, then RUNNING again. For background on watching restarts and checkpoints, see Flink's [monitoring guide](https://flink.apache.org/2019/02/21/monitoring-apache-flink-applications-101/) and the [AWS Managed Flink lifecycle post](https://aws.amazon.com/blogs/big-data/part-2-deep-dive-into-the-amazon-managed-service-for-apache-fink-application-lifecycle). Two Flink issues frame what I measured: [FLINK-23807](https://issues.apache.org/jira/browse/FLINK-23807) ("use numRestarts to detect restarts in tests") and [FLINK-34907](https://issues.apache.org/jira/browse/FLINK-34907) ("jobRunningTs should be the timestamp that all tasks are running").
 
 I'm a code owner of the OpenTelemetry Flink metrics receiver, so I wanted numbers: what job state, Kubernetes and Splunk each show when a TaskManager disappears, and whether the receiver's restart count in Splunk matches Flink's own.
 
@@ -72,7 +72,7 @@ I'm a code owner of the OpenTelemetry Flink metrics receiver, so I wanted number
 - **A watcher** on the other node read Flink's REST API once a second: job state, tasks running, `numRestarts`, checkpoint counts, plus Flink's own state-change timestamps.
 - **Deleting the TaskManager pod** stands in for a node drain, an eviction or an out-of-memory kill.
 
-Phase 1 had no Flink receiver and two deletions 45 s apart. Phase 2 added the receiver and three deletions 30 s apart.
+Phase 1 had no Flink receiver and two deletions 45 s apart. Phase 2 added the receiver and three deletions 49 to 54 s apart (the lab waits for RUNNING, then 30 s).
 
 ## Phase 1: what job state and Kubernetes showed
 
@@ -83,19 +83,19 @@ Two deletions, 45 seconds apart:
 | 1 | 1.2 s | 5.1 s | 2.0 s | 0 | 1 | +1 |
 | 2 | 1.1 s | 5.0 s | 2.0 s | 0 | 1 | +1 |
 
-"Not RUNNING" runs from Flink's RESTARTING timestamp to its next RUNNING timestamp. My one-second samples never caught the job saying RUNNING with a task not yet running, so the FLINK-34907 gap didn't show at this sampling; a gap under a second could still be there.
+"Not RUNNING" runs from Flink's RESTARTING timestamp to its next RUNNING timestamp. My one-second samples never caught the job saying RUNNING with a task not yet running, so a RUNNING-before-tasks gap like the one FLINK-34907 is about didn't show at this sampling; a gap under a second could still be there.
 
 `kubectl` read 0 available TaskManagers for about 2 seconds each time. I read `k8s.deployment.available` in Splunk with `rollup='min'`, so a dip inside a 10 s point would survive, and every point was 1. The chart sets no `collection_interval` for its `k8s_cluster` receiver, which reports every 10 s by default, so a 2-second replacement usually falls between two reports. That's why Flink's own restart counter is the signal to bring into Splunk for this.
 
 `k8s.container.restarts` stayed at 0 too. Splunk held a series for 3 TaskManager pods: the original and two replacements, each with 0 restarts. A deleted pod is replaced, so the restart count of a container never moves.
 
-![Splunk chart of k8s.deployment.available for flink-taskmanager with rollup min, flat at 1 through the first phase, with one dip to 0 in the second](/abhimanyu/articles/count-flink-restarts-in-splunk-with-opentelemetry-3-pod/step-1.png)
+![Splunk chart of k8s.deployment.available for flink-taskmanager with rollup min, across both phases of the lab](/abhimanyu/articles/count-flink-restarts-in-splunk-with-opentelemetry-3-pod/step-1.png)
 
-The lab measured the phase-1 points. On the chart across both phases, one dip shows, in the second phase.
+The lab measured the phase-1 points only; the chart spans both phases.
 
 ## Phase 2: the receiver in Splunk
 
-The Flink receiver isn't in the Splunk distribution of the Collector, so I ran the upstream contrib Collector (0.165.0) next to it, sending OTLP to the Splunk agent on its node. This is the whole config:
+For the Flink receiver I ran the upstream contrib Collector (0.165.0) next to the Splunk agent, sending OTLP to the agent on its node. This is the config from the lab's `k8s/30-collector.yaml`:
 
 ```yaml
 receivers:
@@ -119,7 +119,7 @@ service:
       exporters: [otlphttp]
 ```
 
-`HOST_IP` comes from the pod's `status.hostIP`. The receiver type is `flink_metrics`; the older `flinkmetrics` name still works. Collector 0.165.0 also logs that `otlphttp` is a deprecated alias for `otlp_http`.
+`HOST_IP` comes from the pod's `status.hostIP`. Collector 0.165.0 logs that `otlphttp` is a deprecated alias for `otlp_http`.
 
 Then three more deletions. Flink's `numRestarts` rose by 3 for the first, then 2 and 2: 7 restarts from 3 deletions. The first RESTARTING stretch after each was still 5.0 s, but it wasn't the whole story: the job was back at RUNNING with its count settled 21, 16 and 16 s after the deletions, and the watcher saw RESTARTING in 33 of 152 one-second samples, against 8 of 80 in phase 1.
 
@@ -188,7 +188,6 @@ terraform destroy -auto-approve
 - **Total time not RUNNING per deletion** when it counted several restarts. I measured the first RESTARTING stretch and the RESTARTING samples per phase.
 - **Other failures:** a crashing job, a lost JobManager, or a node failure. Only TaskManager pod deletions.
 - **Scale.** One job, one TaskManager with 2 slots, one restart strategy, and a 10 s collection interval.
-- **The receiver's maturity.** It's alpha, so metric names can still change.
 
 ## Sources
 

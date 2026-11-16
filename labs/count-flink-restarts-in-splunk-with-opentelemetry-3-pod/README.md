@@ -16,3 +16,34 @@ strategy, so a lost TaskManager brings it back to RUNNING by itself. The Splunk 
 
 Deleting the TaskManager pod stands in for a node drain, an eviction or an out-of-memory kill. One job, one TaskManager,
 one restart strategy; the receiver reads every 10 s.
+
+## Settings as run (copied from the files in this folder)
+
+- `reproduce.sh` submits the job with `flink run -d -p 2 /opt/flink/examples/streaming/StateMachineExample.jar` (parallelism 2).
+- `k8s/10-app.yaml`: one JobManager and one TaskManager, `taskmanager.numberOfTaskSlots: 2`,
+  `restart-strategy.type: fixed-delay`, `restart-strategy.fixed-delay.attempts: 1000`,
+  `restart-strategy.fixed-delay.delay: 5 s`, `execution.checkpointing.interval: 5 s`.
+- `k8s/30-collector.yaml`: image `otel/opentelemetry-collector-contrib:0.165.0`; `HOST_IP` is set from the pod's
+  `status.hostIP`. Its config (`LAB_ENV` becomes the lab name):
+
+```yaml
+receivers:
+  flink_metrics:
+    endpoint: http://flink-jobmanager:8081
+    collection_interval: 10s
+processors:
+  resource:
+    attributes:
+      - {key: deployment.environment, value: LAB_ENV, action: upsert}
+  batch:
+    timeout: 5s
+exporters:
+  otlphttp:
+    endpoint: http://${env:HOST_IP}:4318
+service:
+  pipelines:
+    metrics:
+      receivers: [flink_metrics]
+      processors: [resource, batch]
+      exporters: [otlphttp]
+```
