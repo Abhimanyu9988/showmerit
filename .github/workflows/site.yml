@@ -45,7 +45,7 @@ jobs:
       - name: Tell Bing (and ChatGPT search through it) about new pages
         run: python tools/indexnow.py
   announce:
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' || github.event_name == 'schedule'
     needs: deploy
     runs-on: ubuntu-latest
     permissions: { contents: read, issues: write }

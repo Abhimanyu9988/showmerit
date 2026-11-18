@@ -1,4 +1,8 @@
-"""Open a "Ready to post" issue for each new article, so GitHub emails Abhi the LinkedIn text."""
+"""Open a "Ready to post" issue for each article on the morning its LinkedIn post is due, so GitHub emails Abhi the text that day.
+
+The post day is `linkedin_date` when set, otherwise the publish `date`. An article published early waits; the daily
+scheduled run opens its issue on the right morning."""
+import datetime
 import json
 import os
 import pathlib
@@ -31,11 +35,13 @@ def body(post, url, image):
         f"![LinkedIn picture]({image})"])
 
 
+TODAY = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=1))).date().isoformat()   # Brussels
 titles = {issue["title"] for issue in api("issues?state=all&per_page=100")}
 for path in sorted((ROOT / "content").glob("*/articles/*.md")):
     post = frontmatter.load(path)
     title = f"Ready to post: {post['title']}"
-    if not post.get("linkedin") or title in titles:
+    due = str(post.get("linkedin_date") or post.get("date"))
+    if not post.get("linkedin") or title in titles or due > TODAY:
         continue
     slug = path.parent.parent.name
     url = f"https://showmerit.com/{slug}/articles/{path.stem}/"
