@@ -15,6 +15,7 @@ OUT = ROOT / ("_preview" if "--preview" in sys.argv else "_site")
 PREVIEW = "--preview" in sys.argv
 SITE = "https://showmerit.com"
 GOATCOUNTER = "https://abhimanyu9988.goatcounter.com/count"
+INDEXNOW_KEY = "12e28cedda84667ed629a944c5c211ea"            # public by design: Bing and other IndexNow engines read /<key>.txt to confirm the site is ours
 MONTHS = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split()
 GROUPS = [("owner", "Code owner"), ("std", "Standards"), ("fix", "Fixes and docs")]
 e = html.escape
@@ -433,6 +434,13 @@ def run_box(article):
     return f'<section class="run wrap" aria-labelledby="run-title"><h2 id="run-title">Run this yourself</h2><div class="options">{options}</div></section>'
 
 
+def follow(profile):
+    """The end-of-article line that turns a one-time reader into a follower. LinkedIn shows only when its address is in data/profile.json."""
+    ways = [f'<a href="{e(profile["linkedin_url"])}">Follow {e(profile["name"].split()[0])} on LinkedIn</a>'] if profile.get("linkedin_url") else []
+    ways.append('<a href="/feed.xml">RSS feed</a>')
+    return f'<p class="follow">Get the next lab-tested article: {" · ".join(ways)}</p>'
+
+
 def article_page(profile, article, others, rechecks=None):
     ticket = [f'<b><a href="/{profile["slug"]}/">{e(profile["name"])}</a></b>', f'<span>Published {full(article["date"])}</span>',
               f'<span>{article["minutes"]} min read</span>']
@@ -448,7 +456,8 @@ def article_page(profile, article, others, rechecks=None):
 {run_box(article)}
 <article class="prose wrap">{article['body']}</article>
 <section class="next wrap"><h2>Read next</h2><ul class="ledger">{article_row(others[0])}</ul>
-<p class="more">{e(profile['lede'])} <a href="/{profile['slug']}/">See the proof</a></p></section></main>"""
+<p class="more">{e(profile['lede'])} <a href="/{profile['slug']}/">See the proof</a></p>
+{follow(profile)}</section></main>"""
     schema = {"@context": "https://schema.org", "@type": "TechArticle", "headline": article["title"],
               "description": article["description"], "datePublished": article["date"], "image": SITE + article["share"],
               "url": SITE + article["url"], "mainEntityOfPage": SITE + article["url"], "author": person(profile),
@@ -505,6 +514,7 @@ def main():
     urls += [(a["url"], a["date"]) for a in articles]
     sitemap = "".join(f"<url><loc>{SITE}{u}</loc><lastmod>{d}</lastmod></url>" for u, d in urls)
     write("/sitemap.xml", f'<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{sitemap}</urlset>\n')
+    write(f"/{INDEXNOW_KEY}.txt", INDEXNOW_KEY)
     write("/robots.txt", f"User-agent: *\nAllow: /\nSitemap: {SITE}/sitemap.xml\n")
     if PREVIEW:
         for file in OUT.rglob("*.html"):

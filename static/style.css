@@ -108,6 +108,7 @@ a.stub.owner:hover { color: var(--on-highlight); }
 .group { padding-block: 36px 0; }
 .group h2 { font-size: 34px; margin-bottom: 12px; }
 .more { margin-top: 16px; }
+.follow { margin-top: 12px; font-weight: 700; }
 details { margin-top: 12px; }
 summary { cursor: pointer; color: var(--muted); }
 
