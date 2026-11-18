@@ -122,7 +122,7 @@ a.stamp.done:hover { background: var(--ink); border-color: var(--ink); }
 
 .head { border-bottom: 1px solid var(--line); }
 .head .wrap { padding-block: 30px 34px; display: grid; grid-template-columns: minmax(0, 1fr) 268px; gap: 28px; align-items: end; }
-.head h1 { font-size: clamp(44px, 7.6vw, 80px); }
+.head h1 { font-size: clamp(44px, 7.6vw, 80px); overflow-wrap: anywhere; }
 .head .desc { margin: 12px 0 0; color: var(--muted); font-size: 19px; max-width: 36em; }
 .head .recheck { margin: 12px 0 0; font: 400 14px/1.45 var(--mono); max-width: 46em; }
 .head .recheck a { color: var(--ink); text-underline-offset: 3px; }
