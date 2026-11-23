@@ -18,7 +18,9 @@ laptop_check: false
 linkedin: 'I sold 200 orders. My dashboard said 400.
 
 
-  Nobody bought twice. Two helpers were counting the same orders.
+  Nobody bought twice.
+
+  If a number drives your decisions, check who''s counting it.
 
 
   I''d put a monitoring agent on each of my two Kubernetes servers. Both agents counted every order, and Splunk added them
@@ -28,16 +30,13 @@ linkedin: 'I sold 200 orders. My dashboard said 400.
   One small setting fixed it: each agent counts only what runs on its own server. Back to 200.
 
 
-  If a number drives your decisions, check who''s counting it.
-
-
   https://showmerit.com/abhimanyu/articles/count-every-order-once-with-prometheus-and-opentelemetry/
 
 
   I work at Splunk, part of Cisco. Views are my own.
 
 
-  #Observability #Kubernetes #OpenTelemetry'
+  #Observability #Kubernetes #OpenTelemetry #showmerit'
 ---
 
 Picture a small café with two cashiers. A customer buys one coffee, and both cashiers ring it up. At closing time the till says two coffees were sold. The coffee machine knows better.
