@@ -1,7 +1,7 @@
 ---
-title: '200 Orders, 400 in Splunk: How a DaemonSet Doubled My Prometheus Metrics'
-description: 'I sent 200 orders and Splunk''s Prometheus counter showed 400: both Splunk OTel Collector DaemonSet agents scraped
-  both pods. A node field selector or autodetect.prometheus brought it back to 200, matching OpenTelemetry.'
+title: I Sold 200 Orders. My Dashboard Said 400.
+description: Two monitoring agents counted the same 200 orders, so Splunk showed 400. Letting each Splunk OTel Collector agent
+  read only its own Kubernetes node brought it back to 200, matching OpenTelemetry.
 date: '2026-11-22'
 linkedin_date: '2026-11-23'
 author: Abhimanyu Bajaj
@@ -15,137 +15,79 @@ evidence_url: https://github.com/Abhimanyu9988/showmerit/tree/main/labs/count-ev
 region: eu-central-1
 keep_share_image: true
 laptop_check: false
-linkedin: 'I sent 200 orders to an application running on EKS.
+linkedin: 'I sold 200 orders. My dashboard said 400.
 
 
-  All 200 succeeded. The application counted 200.
+  Nobody bought twice. Two helpers were counting the same orders.
 
 
-  Then I checked Splunk. The Prometheus counter showed 400.
+  I''d put a monitoring agent on each of my two Kubernetes servers. Both agents counted every order, and Splunk added them
+  up.
 
 
-  My first thought was that something was wrong with the metric. But OpenTelemetry''s independently collected count of successful
-  POST requests was still 200.
+  One small setting fixed it: each agent counts only what runs on its own server. Back to 200.
 
 
-  So I checked who was scraping the pods.
-
-
-  I''d deployed the Splunk OTel Collector as a DaemonSet across two nodes. My Prometheus scrape job used cluster-wide Kubernetes
-  pod discovery.
-
-
-  Both agents were scraping both pods.
-
-
-  Same business counter, collected twice. Four time series in Splunk instead of two.
-
-
-  I tested two fixes: a node field selector and the chart''s autodetect.prometheus: true.
-
-
-  Both worked across four runs.
-
-
-  200 orders. 200 in Splunk. One scraper per pod.
-
-
-  The application never needed changing.
-
-
-  This matters because duplicated metrics can quietly inflate business dashboards and trigger alerts against numbers that
-  don''t represent actual application activity.
-
-
-  I published the configurations, all six runs and raw evidence:
+  If a number drives your decisions, check who''s counting it.
 
 
   https://showmerit.com/abhimanyu/articles/count-every-order-once-with-prometheus-and-opentelemetry/
 
 
-  Have you checked how many Collector agents are scraping each of your Prometheus targets?
-
-
   I work at Splunk, part of Cisco. Views are my own.
 
 
-  #OpenTelemetry #Prometheus #Kubernetes #Observability'
+  #Observability #Kubernetes #OpenTelemetry'
 ---
 
-I sent 200 orders to my application. All 200 succeeded.
+Picture a small café with two cashiers. A customer buys one coffee, and both cashiers ring it up. At closing time the till says two coffees were sold. The coffee machine knows better.
 
-Then I opened Splunk and saw 400 in the Prometheus counter.
-
-That didn't make sense. The application itself had counted 200 orders, and OpenTelemetry was reporting 200 successful POST requests. But the Prometheus metric in Splunk was exactly double.
-
-I wanted to understand where the extra 200 came from.
+That happened in my lab. The café was a small online store, and the till was my monitoring dashboard.
 
 ![Splunk Observability Cloud chart and data table: the Prometheus counter at 400 for the everywhere runs while OpenTelemetry's POST count is 200](/abhimanyu/articles/count-every-order-once-with-prometheus-and-opentelemetry/cover.png)
 
-The application was running on EKS, with two orders pods spread across two nodes. I had installed the Splunk OTel Collector as a DaemonSet, with one agent on each node.
+## 200 orders, 400 on the dashboard
 
-Nothing unusual about that setup. The mistake was in the Prometheus scrape job I'd added.
+My little ordering app ran on Kubernetes across two servers, which Kubernetes calls nodes. Each copy of the app kept a tally of orders in Prometheus format, a common open way for apps to publish numbers. A Splunk OpenTelemetry Collector agent on each server read those tallies and sent them to Splunk for charts and alerts.
 
-## Finding where the extra metrics came from
-
-My first configuration used Kubernetes pod discovery without a node filter.
-
-Each Collector agent discovered both orders pods. Since the Collector ran as a DaemonSet, both agents scraped both pods.
-
-The pods hadn't processed any extra orders. I was collecting the same business counter twice, once through each agent.
-
-The lab confirmed it:
-
-```text
-HERO_MEASURE: pod_scrapers[everywhere-1]=4
-HERO_MEASURE: splunk_prometheus_orders[everywhere-1]=400
-HERO_MEASURE: splunk_series_per_pod_max[everywhere-1]=2
-HERO_MEASURE: splunk_otel_orders[everywhere-1]=200
-```
-
-There were four scraper-pod pairs: two agents scraping two pods.
-
-Splunk held four Prometheus series, with two series per pod.
+I sent 200 orders. All 200 succeeded. Splunk said 400.
 
 ![Splunk data table for everywhere-1: four series of orders_created_total summing to 400, two per pod, told apart by host.id, host.name and availability zone](/abhimanyu/articles/count-every-order-once-with-prometheus-and-opentelemetry/step-1.png)
 
-I checked which dimensions separated those series.
+The app also reported its successful orders through OpenTelemetry, and that said 200. Here the two numbers match by design, because the tally goes up once per successful order. In other apps they can differ.
 
-For each pod, the two copies differed in `host.name`, `host.id`, `cloud.availability_zone` and `AWSUniqueId`.
+Splunk held two lines of data for each copy of the app, one per server. Both agents were reading both copies. Two cashiers, one coffee.
 
-Those dimensions identified the node running each Collector agent. The chart's resource detection was doing its job.
+## Why it matters
 
-The problem was that my scrape configuration let both agents discover the same target. When I summed those series in Splunk, I counted each pod's counter once per agent.
+Nothing was broken. Every customer got one order. But the dashboard showed double the sales, and an alert on that number would fire at the wrong time. Splunk and OpenTelemetry did what I asked. My instruction, "every agent, read every app", was the problem.
 
-This behavior has also been discussed in [Collector discussion 9998](https://github.com/open-telemetry/opentelemetry-collector/discussions/9998) and [collector-contrib issue 48546](https://github.com/open-telemetry/opentelemetry-collector-contrib/issues/48546).
-
-## Why OpenTelemetry still showed 200
-
-I had two different measurements.
-
-`orders_created_total` was a Prometheus business counter, incremented by the application's POST handler.
-
-The OpenTelemetry measurement came from zero-code HTTP instrumentation. I counted successful POST requests using `http.server.request.duration_count`, filtered to `http.request.method` POST and `http.response.status_code` 200.
-
-In this lab, the handler incremented the business counter on every successful POST and nothing else. That is why both measurements should match.
-
-They aren't universally interchangeable. Failed orders, retries or different routes could make the numbers diverge in another application.
-
-Here, OpenTelemetry's successful POST count stayed at 200 across all six runs. That gave me an independent measurement to compare against the scraped business counter.
-
-## Fixing the scrape scope
-
-I didn't need to change the application. I needed each agent to scrape only the pods running on its own node.
-
-I tested two configurations.
+## The fix
 
 ![Before and after: with a cluster-wide scrape job both agents scrape both orders pods and Splunk shows 400 over 4 series; scoped to the agent's node, each pod has one scraper and Splunk shows 200 over 2 series; OpenTelemetry shows 200 in both](/abhimanyu/articles/count-every-order-once-with-prometheus-and-opentelemetry/diagram.png)
 
-### Option 1: Keep the scrape job, add a node selector
+Each copy of an app lives on one server, so I told each agent to read only the apps on its own server. Two ways worked: one extra rule in my own scrape job (a node field selector), or the agent's built-in Prometheus autodetection, which already stays on its own server.
 
-The chart already exposes `K8S_NODE_NAME` from the agent pod's `spec.nodeName`.
+Back to 200 in every fixed run, six runs in all:
 
-I added one field selector to Kubernetes pod discovery:
+| Run | Agent-app pairs | Prometheus counter in Splunk | Lines of data (most per app) | OpenTelemetry count |
+| --- | --- | --- | --- | --- |
+| everywhere-1 | 4 | 400 | 4 (2) | 200 |
+| everywhere-2 | 4 | 400 | 4 (2) | 200 |
+| node-1 | 2 | 200 | 2 (1) | 200 |
+| node-2 | 2 | 200 | 2 (1) | 200 |
+| autodetect-1 | 2 | 200 | 2 (1) | 200 |
+| autodetect-2 | 2 | 200 | 2 (1) | 200 |
+
+![Splunk data table: the autodetect runs at 200 for both the Prometheus counter and OpenTelemetry's POST count](/abhimanyu/articles/count-every-order-once-with-prometheus-and-opentelemetry/step-2.png)
+
+Next time a number drives a decision, I'll ask first: who is counting this, and how many of them are there?
+
+## Try it yourself
+
+You need an AWS account and a Splunk Observability Cloud account. The lab code and the raw output of all six runs are in the [evidence folder](https://github.com/Abhimanyu9988/showmerit/tree/main/labs/count-every-order-once-with-prometheus-and-opentelemetry/evidence).
+
+The two fixes, as chart values. The node field selector on your own scrape job (the chart sets `K8S_NODE_NAME` on every agent):
 
 ```yaml
 kubernetes_sd_configs:
@@ -157,63 +99,12 @@ kubernetes_sd_configs:
         field: spec.nodeName=${env:K8S_NODE_NAME}
 ```
 
-Each agent now discovered only pods scheduled on its own node.
-
-### Option 2: Use Prometheus autodetection
-
-I also tested the chart's built-in autodetection:
+Or autodetection, which scrapes pods annotated `prometheus.io/scrape: "true"` from their own node:
 
 ```yaml
 autodetect:
   prometheus: true
 ```
-
-With this setting, the chart's `receiver_creator` watches the node-scoped `k8s_observer`, configured with `node: ${K8S_NODE_NAME}`.
-
-Pods annotated with `prometheus.io/scrape: "true"` are scraped by their local agent.
-
-No custom scrape job was needed.
-
-## What changed in Splunk
-
-After adding the field selector, the next run showed:
-
-```text
-HERO_MEASURE: pod_scrapers[node-1]=2
-HERO_MEASURE: splunk_prometheus_orders[node-1]=200
-HERO_MEASURE: splunk_series_per_pod_max[node-1]=1
-```
-
-One scraper per pod. One Prometheus series per pod.
-
-I then switched to autodetection:
-
-```text
-HERO_MEASURE: splunk_prometheus_orders[autodetect-1]=200
-```
-
-The result held across both runs of each configuration.
-
-| Run | Scraper-pod pairs | Prometheus counter in Splunk | Series (most per pod) | OpenTelemetry count |
-| --- | --- | --- | --- | --- |
-| everywhere-1 | 4 | 400 | 4 (2) | 200 |
-| everywhere-2 | 4 | 400 | 4 (2) | 200 |
-| node-1 | 2 | 200 | 2 (1) | 200 |
-| node-2 | 2 | 200 | 2 (1) | 200 |
-| autodetect-1 | 2 | 200 | 2 (1) | 200 |
-| autodetect-2 | 2 | 200 | 2 (1) | 200 |
-
-Every run sent 200 orders. All 200 succeeded, and the pods counted 200 themselves.
-
-Before each configuration switch, I stopped the previous run's pods so they couldn't be scraped under two configurations.
-
-![Splunk data table: the autodetect runs at 200 for both the Prometheus counter and OpenTelemetry's POST count](/abhimanyu/articles/count-every-order-once-with-prometheus-and-opentelemetry/step-2.png)
-
-The complete raw output, including scraper IPs, series dimensions and per-run checks, is in the lab's [evidence folder](https://github.com/Abhimanyu9988/showmerit/tree/main/labs/count-every-order-once-with-prometheus-and-opentelemetry/evidence).
-
-## Run it yourself
-
-I used EKS 1.34 on two t3.large nodes. The application was a Flask service using prometheus-client 0.26.0 and zero-code OpenTelemetry 0.66b2, deployed as `orders-a` and `orders-b`.
 
 ### Step 1: Create the cluster (EKS took 7m8s in my run, on two t3.large nodes)
 
@@ -225,6 +116,8 @@ export SPLUNK_REALM=us1 SPLUNK_ACCESS_TOKEN=your-ingest-token SPLUNK_API_TOKEN=y
 terraform init && terraform apply -auto-approve
 ```
 
+You get EKS 1.34 with two t3.large nodes. The app is one Flask service with prometheus-client 0.26.0 and zero-code OpenTelemetry 0.66b2, as `orders-a` on one node and `orders-b` on the other.
+
 ### Step 2: The cluster-wide scrape job (333 s in my run)
 
 Run `./reproduce.sh`. It installs the Splunk OTel Collector chart 0.163.1 with `values-everywhere.yaml`, deploys both pods, runs everywhere-1 and everywhere-2 (20 s at 10 orders a second each) and reads everywhere-1 back from Splunk.
@@ -232,26 +125,6 @@ Run `./reproduce.sh`. It installs the Splunk OTel Collector chart 0.163.1 with `
 ### Step 3: The two node-scoped configs (601 s in my run)
 
 Run `./fix.sh`. It switches the agents to `values-node.yaml`, then `values-autodetect.yaml`, two runs each, and reads all six runs back from Splunk. Before each switch it stops the last run's pods, so no run is scraped under two configs.
-
-## What I'd check in a real deployment
-
-The first thing I'd inspect is the number of Prometheus series per pod.
-
-In this lab, two series for the same pod meant two agents were scraping it. The dimensions told me where those agents were running.
-
-On a larger cluster, the potential multiplier grows with the number of agents scraping each pod. A cluster-wide job running in every DaemonSet agent could turn one application counter into many collected copies.
-
-That can distort dashboards, business KPIs and alert thresholds even when the application processes each order only once. I didn't measure those production consequences here.
-
-If you already maintain a custom Prometheus job, the node field selector is a small change. If annotations suit your deployment, autodetection is another option, but first check which pods carry `prometheus.io/scrape: "true"`.
-
-You can also instrument a business counter directly with OpenTelemetry and push it over OTLP, avoiding scraping for that metric.
-
-Splunk helped me see the duplicated series and identify the dimensions separating them. The configuration was the issue, not Splunk or OpenTelemetry.
-
-I started with 200 successful orders and 400 in a dashboard. I finished with the same 200 orders, one scraper per pod and a Prometheus count that agreed with the application's counter.
-
-The thing I'll check earlier next time is who is scraping each target.
 
 ## Clean up (the cluster costs money while it runs)
 
