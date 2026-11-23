@@ -27,6 +27,8 @@ def api(path, body=None):
 
 def body(post, url, image):
     text = post["linkedin"].strip()
+    if "#showmerit" not in text.lower():           # Abhi's rule: every LinkedIn post ends its hashtags with #showmerit
+        text += " #showmerit" if text.splitlines()[-1].lstrip().startswith("#") else "\n\n#showmerit"
     compose = "https://www.linkedin.com/feed/?shareActive=true&text=" + urllib.parse.quote(text)
     return "\n".join([
         f"**Article:** {url}", "", f"**[Open this post in LinkedIn]({compose})** with the text filled in, then tap Post.", "",
