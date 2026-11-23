@@ -12,7 +12,7 @@ Observability Cloud. Only the agent's config differs between runs:
 
 | Config | Runs | How the agent finds the orders pods |
 | --- | --- | --- |
-| `values-everywhere.yaml` | everywhere-1, everywhere-2 (`reproduce.sh`) | a `prometheus/orders` scrape job with Kubernetes pod discovery for `app=orders` |
+| `values-everywhere.yaml` | everywhere-1, everywhere-2 (`reproduce.sh`) | a `prometheus/orders` scrape job with Kubernetes pod discovery (`role: pod`, `namespaces: names: [demo]`), kept to `app=orders` by a relabel rule |
 | `values-node.yaml` | node-1, node-2 (`fix.sh`) | the same job plus one field selector: `spec.nodeName=${env:K8S_NODE_NAME}` |
 | `values-autodetect.yaml` | autodetect-1, autodetect-2 (`fix.sh`) | no job of our own: `autodetect.prometheus: true`, which scrapes pods with `prometheus.io/scrape: "true"` on the agent's node |
 
@@ -81,3 +81,6 @@ autodetect job.)
 - OpenTelemetry Collector discussion 9998, "Otel collector deployment with multiple pods result in duplicate metrics": the
   same series appear once per Collector pod, differing only in the Collector that produced them; later replies report the
   same.
+- Bindplane docs, "Kubernetes Prometheus Node" source (docs.bindplane.com/integrations/sources/kubernetes-prometheus-node):
+  a node-scoped Prometheus source meant to run on every node and scrape only that node's pods, the same idea as the field
+  selector here.
