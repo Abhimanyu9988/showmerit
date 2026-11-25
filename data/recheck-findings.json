@@ -1,0 +1,18 @@
+{
+ "_about": "What a lab recheck found when something broke, written by hand after reading the run. Shown on the Rechecks page and on the article. Every finding links its run and any issue filed upstream.",
+ "findings": [
+  {
+   "article": "trace-a-java-service-on-eks-with-one-annotation-zero-code",
+   "date": "2026-11-25",
+   "run": "https://github.com/Abhimanyu9988/Abhimanyu9988.github.io/actions/runs/45528619550",
+   "versions": "OpenTelemetry Operator chart 0.129.2 (Java agent 2.32.0), eclipse-temurin 17.0.21_9-jdk",
+   "what": "The Java agent was injected but didn't start, so no traces reached the Collector (0 spans).",
+   "cause": "Since Java agent 2.31.0, the agent skips JDK tools, and it counts an app started as java Main.java (the single-file source launcher) as one. The OpenTelemetry project fixed this on main, but the 2.x releases (2.32.0 to 2.34.0) don't have the fix yet.",
+   "workaround": "The agent's log message says setting OTEL_JAVAAGENT_ENABLED=true starts it anyway. Not yet retested in this lab.",
+   "issues": [
+    {"label": "opentelemetry-java-instrumentation #21491: backport the fix to 2.x", "url": "https://github.com/open-telemetry/opentelemetry-java-instrumentation/issues/21491"}
+   ],
+   "status": "open"
+  }
+ ]
+}

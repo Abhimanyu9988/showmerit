@@ -169,3 +169,14 @@ footer .wrap { padding-block: 16px 26px; display: flex; flex-wrap: wrap; justify
   .head .wrap { grid-template-columns: minmax(0, 1fr); gap: 18px; }
   .ticket { border-left: 0; border-top: 3px dotted var(--muted); }
 }
+
+/* Rechecks: what broke when a lab was rerun, with its proof */
+.found { margin-top: 28px; }
+.found h2, .found-list h2 { font-weight: 600; font-size: 18px; margin: 0 0 12px; }
+.finding { border: 1px solid var(--line, #e3e3e3); border-left: 4px solid var(--ink); padding: 14px 18px; margin: 0 0 16px; background: #fff; max-width: 52em; }
+.finding p { margin: 6px 0; line-height: 1.5; }
+.finding .when { font: 400 14px/1.45 var(--mono); }
+.finding .status { background: var(--highlight); padding: 0 4px; }
+.finding .proof { font-size: 14px; }
+.finding .proof a, .finding .when a { color: var(--ink); text-underline-offset: 3px; }
+.stub.broke span:first-child { background: var(--highlight); }

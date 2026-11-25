@@ -75,3 +75,20 @@ if (site / "abhimanyu/index.html").is_file():
     finally:
         page.write_text(keep)
 print("recheck tests pass")
+
+# Findings: written by hand, shown only with their run as proof and GitHub issue links upstream.
+import json as _json
+_saved = (ROOT / "data/recheck-findings.json").read_text()
+try:
+    good = {"article": "a-lab", "date": "2026-11-25", "run": RUN, "what": "It broke.",
+            "issues": [{"label": "x #1", "url": "https://github.com/open-telemetry/x/issues/1"}]}
+    bad_run = {**good, "run": "https://example.com/runs/1"}
+    bad_link = {**good, "issues": [{"label": "x", "url": "https://example.com/1"}]}
+    (ROOT / "data/recheck-findings.json").write_text(_json.dumps({"findings": [good, bad_run, bad_link]}))
+    got = build.load_findings()
+    assert [f["run"] for f in got] == [RUN] and got[0]["status"] == "open", got
+    html = build.finding_html(got[0])
+    assert f'href="{RUN}"' in html and "github.com/open-telemetry/x/issues/1" in html, html
+finally:
+    (ROOT / "data/recheck-findings.json").write_text(_saved)
+print("findings: ok")
