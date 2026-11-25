@@ -92,3 +92,8 @@ try:
 finally:
     (ROOT / "data/recheck-findings.json").write_text(_saved)
 print("findings: ok")
+
+# The rechecks page shows the date of the run it links to.
+assert build.recheck_date(aws) == "2026-11-20"
+assert build.recheck_date({}) is None
+assert build.recheck_date({**free(("article", OLD, True)), **aws}) == max(free(("article", OLD, True))["free"]["date"], "2026-11-20")
