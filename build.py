@@ -184,6 +184,15 @@ def recheck_line(record):
     return f"Recheck on {day} failed with {version_text(*failed)}, investigating{where}", free["run"], True
 
 
+def recheck_date(record):
+    """The date of the run recheck_line shows (the newer of the GitHub-runner and AWS rechecks), or None."""
+    free = record.get("free") if (record.get("free") or {}).get("results") else None
+    aws = record.get("aws")
+    if aws and (not free or aws["date"] >= free["date"]):
+        return aws["date"]
+    return free["date"] if free else None
+
+
 def recheck_html(record):
     line = recheck_line(record or {})
     if not line:
@@ -468,9 +477,10 @@ def rechecks_page(profile, articles, rechecks, findings):
         line = recheck_line(rechecks.get(a["slug"]) or {})
         if line:
             text, run, failed = line
+            day = full(recheck_date(rechecks[a["slug"]]))
             rows.append(f'<li><div class="claim"><a href="{a["url"]}">{e(a["title"])}</a><small>{e(text)}</small></div>'
-                        f'<a class="stub{" broke" if failed else ""}" href="{e(run)}" aria-label="Recheck run for {e(a["title"])}">'
-                        f'<span>{"Broke" if failed else "Works"}</span><span>Run</span></a></li>')
+                        f'<a class="stub{" broke" if failed else ""}" href="{e(run)}" aria-label="Last recheck run for {e(a["title"])}, {day}, on GitHub">'
+                        f'<span>{"Broke" if failed else "Works"}</span><span>Last run {day}</span><span>View on GitHub</span></a></li>')
     latest = f'<ul class="ledger">{"".join(rows)}</ul>' if rows else "<p>No recheck has run yet.</p>"
     content = f"""<main><section class="person wrap"><h1>Rechecks</h1>
 <p>Every lab on ShowMerit is run again on a schedule, with the versions the article used and with the newest ones, so a
