@@ -35,6 +35,12 @@ for page in pages:
     for line in re.findall(r'<p class="recheck[^"]*">(.*?)</p>', text, re.S):   # a recheck claim needs its run as proof
         if not re.fullmatch(r'<a href="https://github\.com/Abhimanyu9988/Abhimanyu9988\.github\.io/actions/runs/\d+">[^<]+</a>', line):
             problems.append(f"{name}: recheck line without its run link")
+    for block in re.findall(r'<div class="finding">(.*?)</div>', text, re.S):   # a finding needs its run as proof
+        if not re.search(r'<p class="proof"><a href="https://github\.com/Abhimanyu9988/Abhimanyu9988\.github\.io/actions/runs/\d+">', block):
+            problems.append(f"{name}: recheck finding without its run link")
+    shown = re.search(r"<h2>What broke \((\d+)\)</h2>", text)
+    if shown and int(shown.group(1)) != text.count('<div class="finding">'):
+        problems.append(f"{name}: findings count doesn't match the list")
     image = re.search(r'og:image" content="https://showmerit\.com([^"?]+)', text)
     if image:
         file = SITE / image.group(1).lstrip("/")

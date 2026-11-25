@@ -99,6 +99,48 @@ def load_rechecks():
         return {}
 
 
+FINDING_RUN = re.compile(r"https://github\.com/Abhimanyu9988/Abhimanyu9988\.github\.io/actions/runs/\d+")
+FINDING_LINK = re.compile(r"https://github\.com/[\w.-]+/[\w.-]+/(?:issues|pull)/\d+")
+
+
+def load_findings():
+    """What a recheck found when something broke (data/recheck-findings.json, written by hand). A finding without its
+    run link, or with an upstream link that isn't a GitHub issue or pull request, is left out, so no claim shows unproven."""
+    try:
+        found = json.loads((ROOT / "data/recheck-findings.json").read_text()).get("findings") or []
+    except (OSError, ValueError, AttributeError):
+        return []
+    out = []
+    for f in found:
+        if not isinstance(f, dict) or not all(isinstance(f.get(k), str) and f[k] for k in ("article", "date", "run", "what")):
+            continue
+        if not re.fullmatch(r"[a-z0-9-]{1,120}", f["article"]) or not re.fullmatch(r"\d{4}-\d{2}-\d{2}", f["date"]) \
+                or not FINDING_RUN.fullmatch(f["run"]):
+            continue
+        issues = [i for i in f.get("issues") or [] if isinstance(i, dict) and isinstance(i.get("url"), str)
+                  and FINDING_LINK.fullmatch(i["url"]) and isinstance(i.get("label"), str)]
+        if len(issues) != len(f.get("issues") or []):
+            continue
+        out.append({**f, "issues": issues, "status": f.get("status") if f.get("status") in ("open", "fixed") else "open"})
+    return sorted(out, key=lambda f: f["date"], reverse=True)
+
+
+def finding_html(f, article=None):
+    """One finding: the date, what broke, why, the workaround, and the proof links."""
+    where = f' in <a href="{article["url"]}">{e(article["title"])}</a>' if article else ""
+    parts = [f'<p class="when">{full(f["date"])}{where}. <span class="status">{"Open" if f["status"] == "open" else "Fixed upstream"}</span></p>',
+             f'<p>{e(f["what"])}</p>']
+    if f.get("versions"):
+        parts.append(f'<p><b>Tested with</b> {e(f["versions"])}</p>')
+    if f.get("cause"):
+        parts.append(f'<p><b>Why</b> {e(f["cause"])}</p>')
+    if f.get("workaround"):
+        parts.append(f'<p><b>Workaround</b> {e(f["workaround"])}</p>')
+    links = [f'<a href="{e(f["run"])}">The recheck run</a>'] + [f'<a href="{e(i["url"])}">{e(i["label"])}</a>' for i in f["issues"]]
+    parts.append(f'<p class="proof">{" · ".join(links)}</p>')
+    return f'<div class="finding">{"".join(parts)}</div>'
+
+
 def headline(versions):
     """The versions a reader cares about: the agent and charts, or the images when the lab pins nothing else."""
     main = {k: v for k, v in versions.items() if k == "agent" or k.endswith(" chart")}
@@ -213,7 +255,7 @@ def page(title, description, path, content, image="/share.png", kind="website", 
 <script data-goatcounter="{GOATCOUNTER}" async src="https://gc.zgo.at/count.js"></script>
 </head><body>
 <header class="bar"><div class="wrap"><a class="brand" href="/">ShowMerit</a>
-<nav><a href="/abhimanyu/">Profile</a><a href="/abhimanyu/articles/">Articles</a></nav></div></header>
+<nav><a href="/abhimanyu/">Profile</a><a href="/abhimanyu/articles/">Articles</a><a href="/abhimanyu/rechecks/">Rechecks</a></nav></div></header>
 {content}
 <footer><div class="wrap"><span>ShowMerit. Every line links to its proof.</span><span>Free for now.</span></div></footer>
 </body></html>
@@ -334,7 +376,7 @@ def person(profile):
 
 def llms(profile, articles):
     lines = ["# ShowMerit", "", "> Professional profiles where every claim links to its proof.", "",
-             f"## {profile['name']}", "", profile["lede"], "", f"- [Profile]({SITE}/{profile['slug']}/)", "", "## Articles", ""]
+             f"## {profile['name']}", "", profile["lede"], "", f"- [Profile]({SITE}/{profile['slug']}/)", f"- [Rechecks: labs rerun with the newest versions]({SITE}/{profile['slug']}/rechecks/)", "", "## Articles", ""]
     lines += [f"- [{a['title']}]({SITE}{a['url']}article.md): {a['description']}" for a in articles]
     return "\n".join(lines) + "\n"
 
@@ -417,6 +459,29 @@ def articles_page(profile, articles):
                 f"/{profile['slug']}/articles/", content, image=f"/{profile['slug']}/share.png")
 
 
+def rechecks_page(profile, articles, rechecks, findings):
+    """Every published lab is rerun with its own and the newest versions. Findings first, then the latest result per article."""
+    by_slug = {a["slug"]: a for a in articles}
+    found = "".join(finding_html(f, by_slug.get(f["article"])) for f in findings) or "<p>Nothing has broken yet.</p>"
+    rows = []
+    for a in articles:
+        line = recheck_line(rechecks.get(a["slug"]) or {})
+        if line:
+            text, run, failed = line
+            rows.append(f'<li><div class="claim"><a href="{a["url"]}">{e(a["title"])}</a><small>{e(text)}</small></div>'
+                        f'<a class="stub{" broke" if failed else ""}" href="{e(run)}" aria-label="Recheck run for {e(a["title"])}">'
+                        f'<span>{"Broke" if failed else "Works"}</span><span>Run</span></a></li>')
+    latest = f'<ul class="ledger">{"".join(rows)}</ul>' if rows else "<p>No recheck has run yet.</p>"
+    content = f"""<main><section class="person wrap"><h1>Rechecks</h1>
+<p>Every lab on ShowMerit is run again on a schedule, with the versions the article used and with the newest ones, so a
+reader knows the steps still work. When an upgrade breaks something, it's written up here with the run as proof, and
+any issue filed with the project that owns the code.</p></section>
+<section class="wrap found-list"><h2>What broke ({len(findings)})</h2>{found}</section>
+<section class="wrap found-list"><h2>Latest recheck per article ({len(rows)})</h2>{latest}</section></main>"""
+    return page(f"Rechecks by {profile['name']}", "Lab rechecks with the newest versions: what still works, what broke, and the issues filed upstream.",
+                f"/{profile['slug']}/rechecks/", content, image=f"/{profile['slug']}/share.png")
+
+
 def run_box(article):
     if not article.get("lab_url"):
         return ""
@@ -441,7 +506,7 @@ def follow(profile):
     return f'<p class="follow">Get the next lab-tested article: {" · ".join(ways)}</p>'
 
 
-def article_page(profile, article, others, rechecks=None):
+def article_page(profile, article, others, rechecks=None, findings=None):
     ticket = [f'<b><a href="/{profile["slug"]}/">{e(profile["name"])}</a></b>', f'<span>Published {full(article["date"])}</span>',
               f'<span>{article["minutes"]} min read</span>']
     if article.get("region"):
@@ -450,10 +515,16 @@ def article_page(profile, article, others, rechecks=None):
         ticket.append(f'<a href="{e(article["lab_url"])}">Lab code</a>')
     if article.get("evidence_url"):
         ticket.append(f'<a href="{e(article["evidence_url"])}">Lab evidence</a>')
+    mine = [f for f in findings or [] if f["article"] == article["slug"]]
+    found = (f'<section class="found wrap"><h2>What a recheck found</h2>{"".join(finding_html(f) for f in mine)}'
+             f'<p class="more"><a href="/{profile["slug"]}/rechecks/">All rechecks</a></p></section>') if mine else ""
+    line = recheck_html((rechecks or {}).get(article["slug"]))
+    if mine:                                       # the cause is written up below, so the line points there
+        line = line.replace(", investigating", ", see what a recheck found below")
     content = f"""<main><section class="head"><div class="wrap">
-<div><h1>{e(article['title'])}</h1><p class="desc">{e(article['description'])}</p>{recheck_html((rechecks or {}).get(article['slug']))}</div>
+<div><h1>{e(article['title'])}</h1><p class="desc">{e(article['description'])}</p>{line}</div>
 <div class="ticket">{''.join(ticket)}</div></div></section>
-{run_box(article)}
+{found}{run_box(article)}
 <article class="prose wrap">{article['body']}</article>
 <section class="next wrap"><h2>Read next</h2><ul class="ledger">{article_row(others[0])}</ul>
 <p class="more">{e(profile['lede'])} <a href="/{profile['slug']}/">See the proof</a></p>
@@ -491,6 +562,7 @@ def main():
     rows = load_contributions(profile)
     articles = load_articles(profile)
     rechecks = load_rechecks()
+    findings = load_findings()
     shutil.rmtree(OUT, ignore_errors=True)
     shutil.copytree(ROOT / "static", OUT)
     slug = profile["slug"]
@@ -500,8 +572,9 @@ def main():
     print(f"Goals: {[(g['title'], g['done'], g['total']) for g in goals]}. Earned: {[g['title'] for g in earned]}")
     write(f"/{slug}/", profile_page(profile, rows, articles, today, badges, goals, earned))
     write(f"/{slug}/articles/", articles_page(profile, articles))
+    write(f"/{slug}/rechecks/", rechecks_page(profile, articles, rechecks, findings))
     for i, article in enumerate(articles):
-        write(article["url"], article_page(profile, article, articles[(i + 1) % len(articles):] + articles, rechecks))
+        write(article["url"], article_page(profile, article, articles[(i + 1) % len(articles):] + articles, rechecks, findings))
         source = frontmatter.load(ROOT / "content" / slug / "articles" / f"{article['slug']}.md")
         write(article["url"] + "article.md", f"# {article['title']}\n\n{article['description']}\n\nBy {profile['name']}. "
               f"Published {article['date']}. Page: {SITE}{article['url']}\n\n{source.content}")
@@ -510,7 +583,8 @@ def main():
                             f'<a href="/{slug}/">See a real profile</a>.</p></section></main>'))
     write("/llms.txt", llms(profile, articles))
     write("/feed.xml", feed(profile, articles))
-    urls = [("/", today.isoformat()), (f"/{slug}/", today.isoformat()), (f"/{slug}/articles/", articles[0]["date"])]
+    urls = [("/", today.isoformat()), (f"/{slug}/", today.isoformat()), (f"/{slug}/articles/", articles[0]["date"]),
+            (f"/{slug}/rechecks/", max([f["date"] for f in findings] + [articles[0]["date"]]))]
     urls += [(a["url"], a["date"]) for a in articles]
     sitemap = "".join(f"<url><loc>{SITE}{u}</loc><lastmod>{d}</lastmod></url>" for u, d in urls)
     write("/sitemap.xml", f'<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{sitemap}</urlset>\n')
